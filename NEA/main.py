@@ -1,55 +1,72 @@
-# representation of the cube
-# faces: up, front, right, back, left, down
-# colours: white, green, red, blue, orange, yellow
+
+# each gace is a 3x3 list of colours
+# faces: U = up, D = down, F = front, B = black, L = left, R = right
+# colours: W = white, Y = yellow, R = red, O = orange, G = green, B = blue
 cube = {
     "U": [["W", "W", "W"],
           ["W", "W", "W"],
           ["W", "W", "W"]],
+        
+    "D": [["Y", "Y", "Y"],
+          ["Y", "Y", "Y"],
+          ["Y", "Y", "Y"]],
     
     "F": [["G", "G", "G"],
           ["G", "G", "G"],
           ["G", "G", "G"]],
     
-    "R": [["R", "R", "R"],
-          ["R", "R", "R"],
-          ["R", "R", "R"]],
-    
     "B": [["B", "B", "B"],
           ["B", "B", "B"],
           ["B", "B", "B"]],
-
+    
     "L": [["O", "O", "O"],
           ["O", "O", "O"],
           ["O", "O", "O"]],
     
-    "D": [["Y", "Y", "Y"],
-          ["Y", "Y", "Y"],
-          ["Y", "Y", "Y"]]
+    "R": [["R", "R", "R"],
+          ["R", "R", "R"],
+          ["R", "R", "R"]]
 }
 
-def rotate_face(face): # rotate face clockwise-
 
-    reversed_face = face[::-1] # reverses order of rows
-    print("reversed: ", reversed_face)
+def rotate_face_cw(face): # rotates a face clockwise
 
-    #transposing
-    ROWS = 3 # constant
-    COLUMNS = 3 #constant
+      # reverse the rows (top to bottom)
+      reversed_rows = face[::-1]
 
-    #initialisng the matrix with 0
-    transposed = [[0 for _ in range(ROWS)] for _ in range(COLUMNS)]
+      # transpose (swap rows with columns)
+      transposed = []
+      for collumn in range(3):
+            new_row = [reversed_rows[row][collumn] for row in range(3)]
+            transposed.append(new_row)
 
-    #transpose new values 
-    for i in range(ROWS):
-        for j in range(COLUMNS):
-            transposed[j][i] = reversed_face[i][j]
-    print("transposed: ", transposed)
+      return transposed
+
+def rotate_face_acw(face): # rotates face anticlockwise
+
+      # transpose (swap rows with columns)
+      transposed = []
+      for collumn in range(3):
+            new_row = [face[row][collumn] for row in range(3)]
+            transposed.append(new_row)
+      
+      # reverse the rows (top to bottom)
+      reversed_rows = transposed[::-1]
+
+      return reversed_rows
 
 
+# test face
+face = [
+    [1, 2, 3],   # top row
+    [4, 5, 6],   # middle row
+    [7, 8, 9]    # bottom row
+]
 
-
-face = [["W", "O", "Y"],
-        ["R", "G", "W"],
-        ["W", "R", "B"]]
-
-rotate_face(face)
+newface=face
+print(face)
+for i in range(1,5): # checking through all possible turns
+      newface=rotate_face_cw(newface)
+      print(f"\nRotation {i}")
+      for j in newface:
+            print(j)

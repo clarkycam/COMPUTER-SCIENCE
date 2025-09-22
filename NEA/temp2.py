@@ -5,7 +5,7 @@ class RubiksCubeViewer(ctk.CTk):
         super().__init__()
 
         self.title("Rubik's Cube Viewer")
-        self.geometry("800x600")
+        self.geometry("800x650")
         
         # Define the colors and their corresponding hex codes
         self.colors = {
@@ -27,29 +27,18 @@ class RubiksCubeViewer(ctk.CTk):
             'back': ['blue'] * 9,
             'bottom': ['yellow'] * 9
         }
+        
+        # Initialize the current selected color
+        self.current_color = self.colors['white']
 
         self.create_widgets()
 
-    def create_tile_button(self, frame, initial_color_name):
-        """Helper function to create and return a single tile button."""
-        tile = ctk.CTkButton(
-            frame, 
-            fg_color=self.colors[initial_color_name], 
-            hover_color=self.colors[initial_color_name],
-            text="", 
-            width=60, 
-            height=60, 
-            corner_radius=5,
-        )
-        # We bind the command after the button is created
-        tile.configure(command=lambda: self.change_color(tile))
-        return tile
-
     def create_widgets(self):
-        """Builds the main window and all cube face widgets."""
+        """Builds the main window, cube faces, and color picker."""
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(padx=20, pady=20)
 
+        # Create frames for each cube face
         face_frames = {}
         for face_name in self.face_layouts:
             face_frames[face_name] = ctk.CTkFrame(main_frame, fg_color="gray20", border_width=2, corner_radius=10)
@@ -69,32 +58,53 @@ class RubiksCubeViewer(ctk.CTk):
                 row, col = divmod(i, 3)
                 initial_color_name = face_layout[i]
                 
-                # Use the helper function to create each button
+                # Use a helper function to create and configure the button
                 tile = self.create_tile_button(frame, initial_color_name)
                 tile.grid(row=row, column=col, padx=2, pady=2)
-                
-    def change_color(self, tile):
-        """Cycles the color of a tile when it is clicked."""
-        current_color_hex = tile.cget("fg_color")
         
-        # Find the name of the current color from its hex value
-        current_color_name = None
-        for name, hex_code in self.colors.items():
-            if hex_code.lower() == current_color_hex.lower():
-                current_color_name = name
-                break
+        # Create a frame for the color picker
+        color_picker_frame = ctk.CTkFrame(self, fg_color="transparent")
+        color_picker_frame.pack(pady=10)
         
-        if current_color_name:
-            try:
-                current_index = self.color_names.index(current_color_name)
-                next_index = (current_index + 1) % len(self.color_names)
-                next_color_name = self.color_names[next_index]
-                new_color_hex = self.colors[next_color_name]
-                tile.configure(fg_color=new_color_hex, hover_color=new_color_hex)
-            except ValueError:
-                tile.configure(fg_color=self.colors[self.color_names[0]], hover_color=self.colors[self.color_names[0]])
-        else:
-            tile.configure(fg_color=self.colors[self.color_names[0]], hover_color=self.colors[self.color_names[0]])
+        # Create a button for each color
+        for i, color_name in enumerate(self.color_names):
+            color_hex = self.colors[color_name]
+            
+            color_button = ctk.CTkButton(
+                color_picker_frame, 
+                text="",
+                fg_color=color_hex,
+                hover_color=color_hex,
+                width=50,
+                height=50,
+                corner_radius=5,
+                command=lambda color=color_hex: self.select_color(color)
+            )
+            color_button.grid(row=0, column=i, padx=5)
+
+    def create_tile_button(self, frame, initial_color_name):
+        """Helper function to create and configure a single tile button."""
+        tile = ctk.CTkButton(
+            frame, 
+            fg_color=self.colors[initial_color_name], 
+            hover_color=self.colors[initial_color_name],
+            text="", 
+            width=60, 
+            height=60, 
+            corner_radius=5,
+        )
+        # Bind the command after the button is created
+        tile.configure(command=lambda: self.set_tile_color(tile))
+        return tile
+
+    def select_color(self, color):
+        """Sets the current active color."""
+        self.current_color = color
+        print(f"Selected color: {color}")
+
+    def set_tile_color(self, tile):
+        """Changes the color of a tile to the currently selected color."""
+        tile.configure(fg_color=self.current_color, hover_color=self.current_color)
 
 if __name__ == "__main__":
     app = RubiksCubeViewer()

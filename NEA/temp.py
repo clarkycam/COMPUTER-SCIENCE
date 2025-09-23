@@ -1,101 +1,113 @@
-import customtkinter as ctk
+# def move_U(cube): # wrong
+#     # Rotate the U face clockwise
+#     cube["U"] = rotate_face_cw(cube["U"])
+    
+#     # Cycle the top rows of F, R, B, L
+#     f_top, r_top, b_top, l_top = cube["F"][0][:], cube["R"][0][:], cube["B"][0][:], cube["L"][0][:]
+    
+#     cube["F"][0] = l_top
+#     cube["R"][0] = f_top
+#     cube["B"][0] = r_top
+#     cube["L"][0] = b_top
 
-class RubiksCubeViewer(ctk.CTk):
-    def __init__(self):
-        super().__init__()
+def move_U(cube):
+    
+    # Rotate the U face clockwise
+    cube["U"] = rotate_face_cw(cube["U"])
 
-        self.title("Rubik's Cube Viewer")
-        self.geometry("800x600")
-        
-        # Define the colors and their corresponding hex codes
-        self.colors = {
-            'white': '#FFFFFF',
-            'yellow': '#FFFF00',
-            'blue': '#0000FF',
-            'green': '#008000',
-            'red': '#FF0000',
-            'orange': '#FFA500'
-        }
-        self.color_names = list(self.colors.keys())
+    # Cycle the top rows of F, R, B, L
+    f_top, r_top, b_top, l_top = cube["F"][0][:], cube["R"][0][:], cube["B"][0][:], cube["L"][0][:]
+    cube["F"][0] = r_top
+    cube["L"][0] = f_top
+    cube["B"][0] = l_top
+    cube["R"][0] = b_top
 
-        # Define the initial state of the cube's faces
-        self.face_layouts = {
-            'top': ['white'] * 9,
-            'front': ['green'] * 9,
-            'right': ['red'] * 9,
-            'left': ['orange'] * 9,
-            'back': ['blue'] * 9,
-            'bottom': ['yellow'] * 9
-        }
 
-        self.create_widgets()
+def move_D(cube):
+    cube["D"] = rotate_face_cw(cube["D"])
+    f_bot, r_bot, b_bot, l_bot = cube["F"][2][:], cube["R"][2][:], cube["B"][2][:], cube["L"][2][:]
+    cube["F"][2] = l_bot
+    cube["R"][2] = f_bot
+    cube["B"][2] = r_bot
+    cube["L"][2] = b_bot
 
-    def create_tile_button(self, frame, initial_color_name):
-        """Helper function to create and return a single tile button."""
-        tile = ctk.CTkButton(
-            frame, 
-            fg_color=self.colors[initial_color_name], 
-            hover_color=self.colors[initial_color_name],
-            text="", 
-            width=60, 
-            height=60, 
-            corner_radius=5,
-        )
-        # We bind the command after the button is created
-        tile.configure(command=lambda: self.change_color(tile))
-        return tile
 
-    def create_widgets(self):
-        """Builds the main window and all cube face widgets."""
-        main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(padx=20, pady=20)
+def move_F(cube):
+    cube["F"] = rotate_face_cw(cube["F"])
+    u_bot = cube["U"][2][:]
+    r_col = [cube["R"][i][0] for i in range(3)]
+    d_top = cube["D"][0][:]
+    l_col = [cube["L"][i][2] for i in range(3)]
+    cube["R"][0][0], cube["R"][1][0], cube["R"][2][0] = u_bot
+    cube["D"][0] = r_col[::-1]
+    cube["L"][0][2], cube["L"][1][2], cube["L"][2][2] = d_top
+    cube["U"][2] = l_col[::-1]
 
-        face_frames = {}
-        for face_name in self.face_layouts:
-            face_frames[face_name] = ctk.CTkFrame(main_frame, fg_color="gray20", border_width=2, corner_radius=10)
-            
-        # Position the faces to resemble a cube net
-        face_frames['top'].grid(row=0, column=1, padx=5, pady=5)
-        face_frames['left'].grid(row=1, column=0, padx=5, pady=5)
-        face_frames['front'].grid(row=1, column=1, padx=5, pady=5)
-        face_frames['right'].grid(row=1, column=2, padx=5, pady=5)
-        face_frames['back'].grid(row=1, column=3, padx=5, pady=5)
-        face_frames['bottom'].grid(row=2, column=1, padx=5, pady=5)
 
-        # Draw the 3x3 grid of tiles for each face
-        for face_name, face_layout in self.face_layouts.items():
-            frame = face_frames[face_name]
-            for i in range(9):
-                row, col = divmod(i, 3)
-                initial_color_name = face_layout[i]
-                
-                # Use the helper function to create each button
-                tile = self.create_tile_button(frame, initial_color_name)
-                tile.grid(row=row, column=col, padx=2, pady=2)
-                
-    def change_color(self, tile):
-        """Cycles the color of a tile when it is clicked."""
-        current_color_hex = tile.cget("fg_color")
-        
-        # Find the name of the current color from its hex value
-        current_color_name = None
-        for name, hex_code in self.colors.items():
-            if hex_code.lower() == current_color_hex.lower():
-                current_color_name = name
-                break
-        
-        if current_color_name:
-            try:
-                current_index = self.color_names.index(current_color_name)
-                next_index = (current_index + 1) % len(self.color_names)
-                next_color_name = self.color_names[next_index]
-                new_color_hex = self.colors[next_color_name]
-                tile.configure(fg_color=new_color_hex, hover_color=new_color_hex)
-            except ValueError:
-                tile.configure(fg_color=self.colors[self.color_names[0]], hover_color=self.colors[self.color_names[0]])
-        else:
-            tile.configure(fg_color=self.colors[self.color_names[0]], hover_color=self.colors[self.color_names[0]])
+# def move_B(cube): # wrong
+#     cube["B"] = rotate_face_cw(cube["B"])
+#     u_top = cube["U"][0][:]
+#     r_col = [cube["R"][i][2] for i in range(3)]
+#     d_bot = cube["D"][2][:]
+#     l_col = [cube["L"][i][0] for i in range(3)]
+#     cube["R"][0][2], cube["R"][1][2], cube["R"][2][2] = u_top
+#     cube["D"][2] = r_col[::-1]
+#     cube["L"][0][0], cube["L"][1][0], cube["L"][2][0] = d_bot
+#     cube["U"][0] = l_col[::-1]
 
-if __name__ == "__main__":
-    app = RubiksCubeViewer()
-    app.mainloop()
+def move_B(cube): # correct
+    cube["B"] = rotate_face_cw(cube["B"])
+    u_top = cube["U"][0][:]
+    r_col = [cube["R"][i][2] for i in range(3)]
+    d_bot = cube["D"][2][:]
+    l_col = [cube["L"][i][0] for i in range(3)]
+    cube["R"][0][2], cube["R"][1][2], cube["R"][2][2] = d_bot
+    cube["D"][2] = l_col[::-1]
+    cube["L"][0][0], cube["L"][1][0], cube["L"][2][0] = u_top
+    cube["U"][0] = r_col[::-1]
+
+
+def move_L(cube): # correct
+    cube["L"] = rotate_face_cw(cube["L"])
+    u_col = [cube["U"][i][0] for i in range(3)]
+    f_col = [cube["F"][i][0] for i in range(3)]
+    d_col = [cube["D"][i][0] for i in range(3)]
+    b_col = [cube["B"][2-i][2] for i in range(3)]  # reversed
+    for i in range(3): cube["F"][i][0] = u_col[i]
+    for i in range(3): cube["D"][i][0] = f_col[i]
+    for i in range(3): cube["B"][2-i][2] = d_col[i]
+    for i in range(3): cube["U"][i][0] = b_col[i]
+
+# def move_L(cube): # wrong
+#     cube["L"] = rotate_face_cw(cube["L"])
+#     u_col = [cube["U"][i][0] for i in range(3)]
+#     f_col = [cube["F"][i][0] for i in range(3)]
+#     d_col = [cube["D"][i][0] for i in range(3)]
+#     b_col = [cube["B"][i][0] for i in range(3)]
+#     for i in range(3): cube["F"][i][0] = u_col[i]
+#     for i in range(3): cube["D"][i][0] = f_col[i]
+#     for i in range(3): cube["B"][i][0] = d_col[i]
+#     for i in range(3): cube["U"][i][0] = b_col[i]
+
+
+def move_R(cube): # correct
+    cube["R"] = rotate_face_cw(cube["R"])
+    u_col = [cube["U"][i][2] for i in range(3)]
+    f_col = [cube["F"][i][2] for i in range(3)]
+    d_col = [cube["D"][i][2] for i in range(3)]
+    b_col = [cube["B"][2-i][0] for i in range(3)]  # reversed
+    for i in range(3): cube["B"][2-i][0] = u_col[i]
+    for i in range(3): cube["U"][i][2] = f_col[i]
+    for i in range(3): cube["F"][i][2] = d_col[i]
+    for i in range(3): cube["D"][i][2] = b_col[i]
+
+# def move_R(cube): # wrong
+#     cube["R"] = rotate_face_cw(cube["R"])
+#     u_col = [cube["U"][i][2] for i in range(3)]
+#     f_col = [cube["F"][i][2] for i in range(3)]
+#     d_col = [cube["D"][i][2] for i in range(3)]
+#     b_col = [cube["B"][i][2] for i in range(3)]
+#     for i in range(3): cube["B"][i][2] = u_col[i]
+#     for i in range(3): cube["U"][i][2] = f_col[i]
+#     for i in range(3): cube["F"][i][2] = d_col[i]
+#     for i in range(3): cube["D"][i][2] = b_col[i]

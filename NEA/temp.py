@@ -1,3 +1,4 @@
+
 # def move_U(cube): # wrong
 #     # Rotate the U face clockwise
 #     cube["U"] = rotate_face_cw(cube["U"])
@@ -32,6 +33,17 @@ def move_D(cube):
     cube["L"][2] = b_bot
 
 
+# def move_F(cube): # wrong
+#     cube["F"] = rotate_face_cw(cube["F"])
+#     u_bot = cube["U"][2][:]
+#     r_col = [cube["R"][i][0] for i in range(3)]
+#     d_top = cube["D"][0][:]
+#     l_col = [cube["L"][i][2] for i in range(3)]
+#     cube["R"][0][0], cube["R"][1][0], cube["R"][2][0] = u_bot
+#     cube["D"][0] = r_col
+#     cube["L"][0][2], cube["L"][1][2], cube["L"][2][2] = d_top
+#     cube["U"][2] = l_col
+
 def move_F(cube):
     cube["F"] = rotate_face_cw(cube["F"])
     u_bot = cube["U"][2][:]
@@ -55,7 +67,7 @@ def move_F(cube):
 #     cube["L"][0][0], cube["L"][1][0], cube["L"][2][0] = d_bot
 #     cube["U"][0] = l_col[::-1]
 
-def move_B(cube): # correct
+def move_B(cube):
     cube["B"] = rotate_face_cw(cube["B"])
     u_top = cube["U"][0][:]
     r_col = [cube["R"][i][2] for i in range(3)]
@@ -66,17 +78,6 @@ def move_B(cube): # correct
     cube["L"][0][0], cube["L"][1][0], cube["L"][2][0] = u_top
     cube["U"][0] = r_col[::-1]
 
-
-def move_L(cube): # correct
-    cube["L"] = rotate_face_cw(cube["L"])
-    u_col = [cube["U"][i][0] for i in range(3)]
-    f_col = [cube["F"][i][0] for i in range(3)]
-    d_col = [cube["D"][i][0] for i in range(3)]
-    b_col = [cube["B"][2-i][2] for i in range(3)]  # reversed
-    for i in range(3): cube["F"][i][0] = u_col[i]
-    for i in range(3): cube["D"][i][0] = f_col[i]
-    for i in range(3): cube["B"][2-i][2] = d_col[i]
-    for i in range(3): cube["U"][i][0] = b_col[i]
 
 # def move_L(cube): # wrong
 #     cube["L"] = rotate_face_cw(cube["L"])
@@ -89,17 +90,17 @@ def move_L(cube): # correct
 #     for i in range(3): cube["B"][i][0] = d_col[i]
 #     for i in range(3): cube["U"][i][0] = b_col[i]
 
+def move_L(cube):
+    cube["L"] = rotate_face_cw(cube["L"])
+    u_col = [cube["U"][i][0] for i in range(3)]
+    f_col = [cube["F"][i][0] for i in range(3)]
+    d_col = [cube["D"][i][0] for i in range(3)]
+    b_col = [cube["B"][2-i][2] for i in range(3)]  # reversed
+    for i in range(3): cube["F"][i][0] = u_col[i]
+    for i in range(3): cube["D"][i][0] = f_col[i]
+    for i in range(3): cube["B"][2-i][2] = d_col[i]
+    for i in range(3): cube["U"][i][0] = b_col[i]
 
-def move_R(cube): # correct
-    cube["R"] = rotate_face_cw(cube["R"])
-    u_col = [cube["U"][i][2] for i in range(3)]
-    f_col = [cube["F"][i][2] for i in range(3)]
-    d_col = [cube["D"][i][2] for i in range(3)]
-    b_col = [cube["B"][2-i][0] for i in range(3)]  # reversed
-    for i in range(3): cube["B"][2-i][0] = u_col[i]
-    for i in range(3): cube["U"][i][2] = f_col[i]
-    for i in range(3): cube["F"][i][2] = d_col[i]
-    for i in range(3): cube["D"][i][2] = b_col[i]
 
 # def move_R(cube): # wrong
 #     cube["R"] = rotate_face_cw(cube["R"])
@@ -111,3 +112,28 @@ def move_R(cube): # correct
 #     for i in range(3): cube["U"][i][2] = f_col[i]
 #     for i in range(3): cube["F"][i][2] = d_col[i]
 #     for i in range(3): cube["D"][i][2] = b_col[i]
+
+def move_R(cube):
+    cube["R"] = rotate_face_cw(cube["R"])
+    u_col = [cube["U"][i][2] for i in range(3)]
+    f_col = [cube["F"][i][2] for i in range(3)]
+    d_col = [cube["D"][i][2] for i in range(3)]
+    b_col = [cube["B"][2-i][0] for i in range(3)]  # reversed
+    for i in range(3): cube["B"][2-i][0] = u_col[i]
+    for i in range(3): cube["U"][i][2] = f_col[i]
+    for i in range(3): cube["F"][i][2] = d_col[i]
+    for i in range(3): cube["D"][i][2] = b_col[i]
+
+
+def rotate_face_cw(face): # rotates a face clockwise
+
+      # reverse the rows (top to bottom)
+      reversed_rows = face[::-1]
+
+      # transpose (swap rows with columns)
+      transposed = []
+      for collumn in range(3):
+            new_row = [reversed_rows[row][collumn] for row in range(3)]
+            transposed.append(new_row)
+
+      return transposed

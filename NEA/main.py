@@ -164,5 +164,9 @@ def move_R_prime(cube):
 # Example usage
 
 print("Initial Cube State:", cube)
+<<<<<<< HEAD
 move_U(cube)
+=======
+move_R(cube)
+>>>>>>> 5c4258225d9c788800f3690a4deccfd90e72021e
 print("Cube State after move:", cube)

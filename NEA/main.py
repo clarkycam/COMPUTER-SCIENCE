@@ -160,7 +160,6 @@ def move_R_prime(cube):
       move_R(cube)
 
 
-
 # Example usage
 
 print("Initial Cube State:", cube)

@@ -10,7 +10,7 @@ customtkinter.set_default_color_theme("blue") # Themes: blue (default), dark-blu
 root = customtkinter.CTk()
 root.title("Rubik's Cube Solver")
 root.iconbitmap("NEA/IMAGES/icon.ico")
-root.geometry("1920x1080")
+root.geometry("1280x920")
 
 
 # --- Fullscreen Toggle Functionality ---
@@ -73,8 +73,8 @@ cube_label.pack(pady=10)
 
 cube_canvas = customtkinter.CTkCanvas(
     cube_frame,
-    width=800,
-    height=600,
+    width=700,
+    height=500,
     bg="#222222",
     highlightthickness=0
 )

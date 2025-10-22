@@ -4,7 +4,7 @@ from PIL import Image
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light
-customtkinter.set_default_color_theme("blue") # Themes: blue (default), dark-blue, green
+customtkinter.set_default_color_theme("NEA/themes/breeze.json") # Themes: blue (default), dark-blue, green
 
 
 root = customtkinter.CTk()

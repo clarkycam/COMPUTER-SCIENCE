@@ -4,18 +4,16 @@ from PIL import Image
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light
-customtkinter.set_default_color_theme("NEA/themes/breeze.json") # Themes: blue (default), dark-blue, green
-
+customtkinter.set_default_color_theme("dark-blue") # Themes: "blue" (default), dark-blue, green, "NEA/THEMES/breeze.json"
 
 root = customtkinter.CTk()
 root.title("Rubik's Cube Solver")
 root.iconbitmap("NEA/IMAGES/icon.ico")
-root.geometry("1280x900")
+root.geometry("1400x950")
 
 
 # --- Fullscreen Toggle Functionality ---
 is_fullscreen = False
-
 
 def toggle_fullscreen():
     global is_fullscreen
@@ -32,14 +30,17 @@ def toggle_fullscreen():
 # --- Light/Dark Mode Toggle Functionality ---
 def toggle_appearance_mode():
     current_mode = customtkinter.get_appearance_mode()
+
     if current_mode == "Dark":
         customtkinter.set_appearance_mode("light")
         theme_button.configure(image=dark_mode_icon)
-        cube_canvas.configure(bg="#E5E5E5") # light grey for light mode
     else:
         customtkinter.set_appearance_mode("dark")
         theme_button.configure(image=light_mode_icon)
-        cube_canvas.configure(bg="#222222") # dark grey for dark mode
+    
+    # Update frame colours manually to match new theme
+    cube_frame.configure(fg_color=customtkinter.ThemeManager.theme["CTkFrame"]["fg_color"])
+    buttons_frame.configure(fg_color=customtkinter.ThemeManager.theme["CTkFrame"]["fg_color"])
 
 
 # --- Title ---
@@ -51,34 +52,25 @@ title_label = customtkinter.CTkLabel(
 title_label.pack(pady=20)
 
 
+# --- Main Frame ---
+main_frame = customtkinter.CTkFrame(root, corner_radius=10)
+main_frame.pack(pady=20)
+
 # --- Cube Display Frame ---
-cube_frame = customtkinter.CTkFrame(root, corner_radius=10)
+cube_frame = customtkinter.CTkFrame(main_frame, corner_radius=10)
 cube_frame.pack(pady=20)
 
 cube_label = customtkinter.CTkLabel(
     cube_frame,
-    text="Cube Display Area",
+    text="Cube Display",
     font=("Arial", 18)
 )
 cube_label.pack(pady=10)
 
 
-# --- Canvas Background Colour Based on Theme ---
-# appearance_mode = customtkinter.get_appearance_mode()
-
-# if appearance_mode == "Dark":
-#     canvas_bg = "#222222" # dark grey for dark mode
-# else:
-#     canvas_bg = "#E5E5E5" # light grey for light mode
-
-cube_canvas = customtkinter.CTkCanvas(
-    cube_frame,
-    width=700,
-    height=500,
-    bg="#222222",
-    highlightthickness=0
-)
-cube_canvas.pack()
+# --- Cube Grid Frame ---
+cube_grid = customtkinter.CTkFrame(cube_frame, width=800, height=500, fg_color="transparent")
+cube_grid.pack(padx=20, pady=20)
 
 
 # --- Load Icons ---
@@ -115,29 +107,25 @@ theme_button = customtkinter.CTkButton(
 )
 theme_button.place(relx=0.01, rely=0.985, anchor="sw")
 
+
 # --- Control Buttons Frame ---
 buttons_frame = customtkinter.CTkFrame(root, corner_radius=10, width=800, height=200)
 buttons_frame.pack(pady=50)
 
 
-# --- Solve Button in Frame ---
+# --- Control Buttons ---
 solve_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Solve Cube", font=("Arial", 16))
 solve_button.grid(row=0, column=0, padx=20, pady=20)
 
-
-# --- Scramble Button in Frame ---
 scramble_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Scramble Cube", font=("Arial", 16))
 scramble_button.grid(row=0, column=1, padx=20, pady=20)
 
-
-# --- Reset Button in Frame ---
 reset_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Reset Cube", font=("Arial", 16))
 reset_button.grid(row=0, column=2, padx=20, pady=20)
 
-
-# --- Exit Button in Frame ---
 exit_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Exit", font=("Arial", 16), command=root.destroy)
 exit_button.grid(row=0, column=3, padx=20, pady=20)
 
 
+# --- Main Loop ---
 root.mainloop()

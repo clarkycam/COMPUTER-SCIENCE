@@ -30,7 +30,6 @@ active_picker_button = None
 
 # --- Fullscreen Toggle Functionality ---
 is_fullscreen = False
-
 def toggle_fullscreen():
     global is_fullscreen
     if is_fullscreen:
@@ -41,7 +40,6 @@ def toggle_fullscreen():
         root.attributes("-fullscreen", True)
         fullscreen_button.configure(image=fullscreen_icon)
         is_fullscreen = True
-
 
 # --- Light/Dark Mode Toggle Functionality ---
 def toggle_appearance_mode():
@@ -65,11 +63,9 @@ title_label = customtkinter.CTkLabel(
 title_label.pack(pady=20)
 
 
-
 # --- Main Frame ---
 main_frame = customtkinter.CTkFrame(root, corner_radius=10, width=1300, height=700)
 main_frame.pack(pady=20, padx=20)
-
 
 
 # --- Colour Picker Frame ---
@@ -101,8 +97,6 @@ def cycle_colours(button):
         btn.configure(border_width=2)
     button.configure(border_width=4)  # highlight cycle button
     active_picker_button = button
-
-
 # colour cycle button
 cycle_button = customtkinter.CTkButton(
     colour_picker_frame,
@@ -115,6 +109,7 @@ cycle_button = customtkinter.CTkButton(
     command=lambda: cycle_colours(cycle_button)
 )
 cycle_button.grid(row=2, column=0, padx=10, pady=(10,0), sticky="n", columnspan=2)
+
 
 # --- Colour Buttons Frame ---
 colour_buttons_frame = customtkinter.CTkFrame(colour_picker_frame, corner_radius=10, fg_color="transparent")
@@ -137,7 +132,6 @@ def set_active_colour(main, hover, button):
         button.configure(border_width=4)
         active_picker_button = button
 
-
 # colour buttons
 tile_width = 80
 tile_height = 80
@@ -157,7 +151,7 @@ white_button = customtkinter.CTkButton(
 white_button.grid(row=0, column=0, padx=5, pady=5)
 colour_buttons.append(white_button)
 
-
+# orange button
 orange_button = customtkinter.CTkButton(
     colour_buttons_frame,
     width=tile_width,
@@ -171,7 +165,6 @@ orange_button = customtkinter.CTkButton(
 )
 orange_button.grid(row=0, column=1, padx=5, pady=5)
 colour_buttons.append(orange_button)
-
 
 # green button
 green_button = customtkinter.CTkButton(
@@ -232,7 +225,6 @@ yellow_button = customtkinter.CTkButton(
 )
 yellow_button.grid(row=2, column=1, padx=5, pady=5)
 colour_buttons.append(yellow_button)
-
 
 
 # --- Cube Display Frame ---
@@ -326,8 +318,6 @@ for face, frame in face_frames.items():
             tile.configure(command=lambda t=tile: paint_tile(t))
             tile.grid(row=row, column=col, padx=tile_padding, pady=tile_padding)
             face_tiles[face].append(tile)
-    
-
 
 
 
@@ -385,7 +375,7 @@ solve_button.grid(row=0, column=0, padx=20, pady=20)
 scramble_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Scramble Cube", font=("Arial", 16))
 scramble_button.grid(row=0, column=1, padx=20, pady=20)
 
-# --- Reset Functionality ---
+# reset function
 def reset_cube():
     for face, tiles in face_tiles.items():
         for tile in tiles:

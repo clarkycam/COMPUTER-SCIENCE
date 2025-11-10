@@ -85,6 +85,7 @@ colour_picker_label = customtkinter.CTkLabel(
 )
 colour_picker_label.grid(row=0, column=0, padx=0, pady=(10, 0), sticky="n", columnspan=2)
 
+
 # --- Colour Cycle Functionality ---
 def cycle_colours(button):
     global cycle_mode, active_picker_button

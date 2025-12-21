@@ -1,6 +1,7 @@
 from tkinter import *
 import customtkinter
 from PIL import Image
+from main import cube, EMPTY_CUBE
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light
@@ -20,6 +21,16 @@ face_colours = {
     "B": {"main": "#0045AD", "hover": "#00378A"},
     "D": {"main": "#FFD500", "hover": "#CCAA00"}
 }
+
+colour_to_letter = {
+    "#FFFFFF": "W",
+    "#FFD500": "Y",
+    "#B90000": "R",
+    "#FF5900": "O",
+    "#009B48": "G",
+    "#0045AD": "B"
+}
+
 
 # --- Colour Selection ---
 cycle_mode = True
@@ -261,8 +272,9 @@ for face in faces:
     frame.grid(row=r, column=c, padx=5, pady=5)
     face_frames[face] = frame
 
+
 # --- Paint Function (Tile Click) ---
-def paint_tile(tile):
+def paint_tile(tile, face, row, col):
     global cycle_mode, active_colour
 
     if cycle_mode:
@@ -277,17 +289,27 @@ def paint_tile(tile):
         else:
             next_index = 0
 
-        tile.configure(
-            fg_color=all_colours[next_index],
-            hover_color=all_hovers[next_index]
-        )
+        new_colour = all_colours[next_index]
+        new_hover = all_hovers[next_index]
 
     else:
         # normal painting mode
-        tile.configure(
-            fg_color=active_colour["main"],
-            hover_color=active_colour["hover"]
-        )
+        new_colour = active_colour["main"]
+        new_hover = active_colour["hover"]
+    
+    # update GUI
+    tile.configure(
+        fg_color=new_colour,
+        hover_color=new_hover
+    )
+
+    if new_colour in colour_to_letter:
+        cube[face][row][col] = colour_to_letter[new_colour]
+    
+    #temp
+    print("\nCube state after change:")
+    for face in cube:
+        print(face, cube[face])
 
 # --- Cube Tiles ---
 cube_size = 3
@@ -316,16 +338,38 @@ for face, frame in face_frames.items():
                 command=lambda t=None: None  # placeholder for click action
             )
 
-            tile.configure(command=lambda t=tile: paint_tile(t))
+            tile.configure(command=lambda t=tile, f=face, r=row, c=col: paint_tile(t, f, r, c))
             tile.grid(row=row, column=col, padx=tile_padding, pady=tile_padding)
             face_tiles[face].append(tile)
 
 
 
 # --- Options Frame ---
-options_frame = customtkinter.CTkFrame(main_frame, corner_radius=10, width=200, height=300)
+options_frame = customtkinter.CTkFrame(main_frame, corner_radius=10, width=200, height=400)
 options_frame.grid(row=0, column=2, padx=20, pady=20, sticky="e")
+options_frame.grid_propagate(False)
 
+# two equal columns
+options_frame.grid_columnconfigure((0, 1), weight=1)
+
+# colour picker label
+options_label = customtkinter.CTkLabel(
+    options_frame,
+    text="Options",
+    font=("Arial", 18),
+    height=20
+)
+options_label.grid(row=0, column=0, padx=0, pady=(10, 10), sticky="n", columnspan=2)
+
+# solver options frame
+solver_options_frame = customtkinter.CTkFrame(options_frame, corner_radius=10, fg_color="transparent", width=180)
+solver_options_frame.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
+# solver options
+radio_var = customtkinter.IntVar(value=0)
+kociemba_radio_button = customtkinter.CTkRadioButton(solver_options_frame, text="Kociemba", variable=radio_var, value=1, corner_radius=5, radiobutton_height=30, radiobutton_width=30)
+kociemba_radio_button.grid(row=0, column=0, padx=0, pady=0)
+CFOP_radio_button = customtkinter.CTkRadioButton(solver_options_frame, text="CFOP", variable=radio_var, value=2, corner_radius=5, radiobutton_height=30, radiobutton_width=30)
+CFOP_radio_button.grid(row=0, column=1, padx=0, pady=0)
 
 
 # --- Load Icons ---
@@ -378,6 +422,16 @@ scramble_button.grid(row=0, column=1, padx=20, pady=20)
 
 # reset function
 def reset_cube():
+    global cube
+
+    # reset cube
+    cube = {}
+    for face in EMPTY_CUBE:
+        new_face = []
+        for row in EMPTY_CUBE[face]:
+            new_face.append(row[:])  # copy each row
+        cube[face] = new_face
+
     for face, tiles in face_tiles.items():
         for tile in tiles:
             tile.configure(
@@ -386,6 +440,10 @@ def reset_cube():
                 # hover_color=face_colours[face]["hover"],
                 hover_color="#404040"
             )
+    print("\nCube reset:")
+    for face in cube:
+        print(face, cube[face])
+
 # reset button
 reset_button = customtkinter.CTkButton(
     buttons_frame,

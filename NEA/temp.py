@@ -1,6 +1,7 @@
 from tkinter import *
 import customtkinter
 from PIL import Image
+from main import cube
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light
@@ -21,8 +22,18 @@ face_colours = {
     "D": {"main": "#FFD500", "hover": "#CCAA00"}
 }
 
+colour_to_letter = {
+    "#FFFFFF": "W",
+    "#FFD500": "Y",
+    "#B90000": "R",
+    "#FF5900": "O",
+    "#009B48": "G",
+    "#0045AD": "B"
+}
+
+
 # --- Colour Selection ---
-cycle_mode = False
+cycle_mode = True
 active_colour = {"main": "#FFFFFF", "hover": "#CCCCCC"}
 # track picker buttons and which is active
 colour_buttons = []
@@ -30,7 +41,6 @@ active_picker_button = None
 
 # --- Fullscreen Toggle Functionality ---
 is_fullscreen = False
-
 def toggle_fullscreen():
     global is_fullscreen
     if is_fullscreen:
@@ -41,7 +51,6 @@ def toggle_fullscreen():
         root.attributes("-fullscreen", True)
         fullscreen_button.configure(image=fullscreen_icon)
         is_fullscreen = True
-
 
 # --- Light/Dark Mode Toggle Functionality ---
 def toggle_appearance_mode():
@@ -65,11 +74,9 @@ title_label = customtkinter.CTkLabel(
 title_label.pack(pady=20)
 
 
-
 # --- Main Frame ---
 main_frame = customtkinter.CTkFrame(root, corner_radius=10, width=1300, height=700)
 main_frame.pack(pady=20, padx=20)
-
 
 
 # --- Colour Picker Frame ---
@@ -89,20 +96,19 @@ colour_picker_label = customtkinter.CTkLabel(
 )
 colour_picker_label.grid(row=0, column=0, padx=0, pady=(10, 0), sticky="n", columnspan=2)
 
-# colour cycle functionality
+
+# --- Colour Cycle Functionality ---
 def cycle_colours(button):
-    global cycle_mode, face_colours, active_colour, active_picker_button
+    global cycle_mode, active_picker_button
+
+    # activate cycle mode
     cycle_mode = True
 
+    # reset all borders
     for btn in colour_buttons:
-        btn.configure(border_width=2)  # reset border of all buttons
-
+        btn.configure(border_width=2)
     button.configure(border_width=4)  # highlight cycle button
-    while cycle_mode:
-        for i in range(1,6):
-            active_colour = {"main": face_colours[i]["main"], "hover": face_colours[i]["hover"]}
-
-
+    active_picker_button = button
 # colour cycle button
 cycle_button = customtkinter.CTkButton(
     colour_picker_frame,
@@ -115,6 +121,7 @@ cycle_button = customtkinter.CTkButton(
     command=lambda: cycle_colours(cycle_button)
 )
 cycle_button.grid(row=2, column=0, padx=10, pady=(10,0), sticky="n", columnspan=2)
+
 
 # --- Colour Buttons Frame ---
 colour_buttons_frame = customtkinter.CTkFrame(colour_picker_frame, corner_radius=10, fg_color="transparent")
@@ -137,7 +144,6 @@ def set_active_colour(main, hover, button):
         button.configure(border_width=4)
         active_picker_button = button
 
-
 # colour buttons
 tile_width = 80
 tile_height = 80
@@ -157,7 +163,7 @@ white_button = customtkinter.CTkButton(
 white_button.grid(row=0, column=0, padx=5, pady=5)
 colour_buttons.append(white_button)
 
-
+# orange button
 orange_button = customtkinter.CTkButton(
     colour_buttons_frame,
     width=tile_width,
@@ -171,7 +177,6 @@ orange_button = customtkinter.CTkButton(
 )
 orange_button.grid(row=0, column=1, padx=5, pady=5)
 colour_buttons.append(orange_button)
-
 
 # green button
 green_button = customtkinter.CTkButton(
@@ -234,7 +239,6 @@ yellow_button.grid(row=2, column=1, padx=5, pady=5)
 colour_buttons.append(yellow_button)
 
 
-
 # --- Cube Display Frame ---
 cube_frame = customtkinter.CTkFrame(main_frame, corner_radius=10)
 cube_frame.grid(row=0, column=1, padx=0, pady=20)
@@ -268,12 +272,44 @@ for face in faces:
     frame.grid(row=r, column=c, padx=5, pady=5)
     face_frames[face] = frame
 
-# --- Paint Function---
-def paint_tile(tile):
+
+# --- Paint Function (Tile Click) ---
+def paint_tile(tile, face, row, col):
+    global cycle_mode, active_colour
+
+    if cycle_mode:
+        # list of all main cube colours
+        all_colours = [i["main"] for i in face_colours.values()]
+        all_hovers = [i["hover"] for i in face_colours.values()]
+
+        current = tile.cget("fg_color") # get current colour
+        if current in all_colours:
+            # get next colour index, goes back to 0 if at end with %
+            next_index = (all_colours.index(current) + 1) % len(all_colours)
+        else:
+            next_index = 0
+
+        new_colour = all_colours[next_index]
+        new_hover = all_hovers[next_index]
+
+    else:
+        # normal painting mode
+        new_colour = active_colour["main"]
+        new_hover = active_colour["hover"]
+    
+    # update GUI
     tile.configure(
-        fg_color=active_colour["main"],
-        hover_color=active_colour["hover"]
+        fg_color=new_colour,
+        hover_color=new_hover
     )
+
+    if new_colour in colour_to_letter:
+        cube[face][row][col] = colour_to_letter[new_colour]
+    
+    #temp
+    print("\nCube state after change:")
+    for f in ["U", "L", "F", "R", "B", "D"]:
+        print(f, cube[f])
 
 # --- Cube Tiles ---
 cube_size = 3
@@ -293,25 +329,47 @@ for face, frame in face_frames.items():
                 width=tile_size,
                 height=tile_size,
                 text="",
-                fg_color=face_colours[face]["main"],
+                fg_color="#505050",
+                # fg_color=face_colours[face]["main"],
                 border_width=1,
                 border_color="#000000",
-                hover_color=face_colours[face]["hover"],
+                hover_color="#404040",
+                # hover_color=face_colours[face]["hover"],
                 command=lambda t=None: None  # placeholder for click action
             )
 
-            tile.configure(command=lambda t=tile: paint_tile(t))
+            tile.configure(command=lambda t=tile, f=face, r=row, c=col: paint_tile(t, f, r, c))
             tile.grid(row=row, column=col, padx=tile_padding, pady=tile_padding)
             face_tiles[face].append(tile)
-    
-
 
 
 
 # --- Options Frame ---
-options_frame = customtkinter.CTkFrame(main_frame, corner_radius=10, width=200, height=300)
+options_frame = customtkinter.CTkFrame(main_frame, corner_radius=10, width=200, height=400)
 options_frame.grid(row=0, column=2, padx=20, pady=20, sticky="e")
+options_frame.grid_propagate(False)
 
+# two equal columns
+options_frame.grid_columnconfigure((0, 1), weight=1)
+
+# colour picker label
+options_label = customtkinter.CTkLabel(
+    options_frame,
+    text="Options",
+    font=("Arial", 18),
+    height=20
+)
+options_label.grid(row=0, column=0, padx=0, pady=(10, 10), sticky="n", columnspan=2)
+
+# solver options frame
+solver_options_frame = customtkinter.CTkFrame(options_frame, corner_radius=10, fg_color="transparent", width=180)
+solver_options_frame.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
+# solver options
+radio_var = customtkinter.IntVar(value=0)
+kociemba_radio_button = customtkinter.CTkRadioButton(solver_options_frame, text="Kociemba", variable=radio_var, value=1, corner_radius=5, radiobutton_height=30, radiobutton_width=30)
+kociemba_radio_button.grid(row=0, column=0, padx=0, pady=0)
+CFOP_radio_button = customtkinter.CTkRadioButton(solver_options_frame, text="CFOP", variable=radio_var, value=2, corner_radius=5, radiobutton_height=30, radiobutton_width=30)
+CFOP_radio_button.grid(row=0, column=1, padx=0, pady=0)
 
 
 # --- Load Icons ---
@@ -362,13 +420,15 @@ solve_button.grid(row=0, column=0, padx=20, pady=20)
 scramble_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Scramble Cube", font=("Arial", 16))
 scramble_button.grid(row=0, column=1, padx=20, pady=20)
 
-# --- Reset Functionality ---
+# reset function
 def reset_cube():
     for face, tiles in face_tiles.items():
         for tile in tiles:
             tile.configure(
-                fg_color=face_colours[face]["main"],
-                hover_color=face_colours[face]["hover"]
+                # fg_color=face_colours[face]["main"],
+                fg_color="#505050",
+                # hover_color=face_colours[face]["hover"],
+                hover_color="#404040"
             )
 # reset button
 reset_button = customtkinter.CTkButton(

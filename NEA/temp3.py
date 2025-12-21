@@ -1,6 +1,8 @@
 from tkinter import *
 import customtkinter
+import random
 from PIL import Image
+from main import cube, EMPTY_CUBE, SOLVED_CUBE
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light
@@ -20,6 +22,25 @@ face_colours = {
     "B": {"main": "#0045AD", "hover": "#00378A"},
     "D": {"main": "#FFD500", "hover": "#CCAA00"}
 }
+
+colour_to_letter = {
+    "#FFFFFF": "W",
+    "#FFD500": "Y",
+    "#B90000": "R",
+    "#FF5900": "O",
+    "#009B48": "G",
+    "#0045AD": "B"
+}
+
+SCRAMBLE_MOVES = [
+    "U", "U'",
+    "D", "D'",
+    "L", "L'",
+    "R", "R'",
+    "F", "F'",
+    "B", "B'"
+]
+
 
 # --- Colour Selection ---
 cycle_mode = True
@@ -263,7 +284,7 @@ for face in faces:
 
 
 # --- Paint Function (Tile Click) ---
-def paint_tile(tile):
+def paint_tile(tile, face, row, col):
     global cycle_mode, active_colour
 
     if cycle_mode:
@@ -278,17 +299,27 @@ def paint_tile(tile):
         else:
             next_index = 0
 
-        tile.configure(
-            fg_color=all_colours[next_index],
-            hover_color=all_hovers[next_index]
-        )
+        new_colour = all_colours[next_index]
+        new_hover = all_hovers[next_index]
 
     else:
         # normal painting mode
-        tile.configure(
-            fg_color=active_colour["main"],
-            hover_color=active_colour["hover"]
-        )
+        new_colour = active_colour["main"]
+        new_hover = active_colour["hover"]
+    
+    # update GUI
+    tile.configure(
+        fg_color=new_colour,
+        hover_color=new_hover
+    )
+
+    if new_colour in colour_to_letter:
+        cube[face][row][col] = colour_to_letter[new_colour]
+    
+    #temp
+    print("\nCube state after change:")
+    for face in cube:
+        print(face, cube[face])
 
 # --- Cube Tiles ---
 cube_size = 3
@@ -317,7 +348,7 @@ for face, frame in face_frames.items():
                 command=lambda t=None: None  # placeholder for click action
             )
 
-            tile.configure(command=lambda t=tile: paint_tile(t))
+            tile.configure(command=lambda t=tile, f=face, r=row, c=col: paint_tile(t, f, r, c))
             tile.grid(row=row, column=col, padx=tile_padding, pady=tile_padding)
             face_tiles[face].append(tile)
 
@@ -395,12 +426,47 @@ buttons_frame.pack(pady=50)
 solve_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Solve Cube", font=("Arial", 16))
 solve_button.grid(row=0, column=0, padx=20, pady=20)
 
+# generate scramble function
+def generate_scramble(length):
+    scramble = []
+    for _ in range(length):
+        move = random.choice(SCRAMBLE_MOVES)
+        scramble.append(move)
+    return scramble
+# scramble function
+def scramble_cube():
+    # reset cube first
+    reset_cube_to_solved()
+
+    # generate scramble
+    scramble_moves = generate_scramble(20)
+
+    # apply scramble moves
+    for move in scramble_moves:
+        apply_move(move)
+
 # scramble button
 scramble_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Scramble Cube", font=("Arial", 16))
 scramble_button.grid(row=0, column=1, padx=20, pady=20)
 
+# reset cube to solved state
+def reset_cube_to_solved():
+    for face in cube:
+        for row in range(3):
+            for col in range(3):
+                cube[face][row][col] = SOLVED_CUBE[face][row][col]
 # reset function
 def reset_cube():
+    global cube
+
+    # reset cube
+    cube = {}
+    for face in EMPTY_CUBE:
+        new_face = []
+        for row in EMPTY_CUBE[face]:
+            new_face.append(row[:])  # copy each row
+        cube[face] = new_face
+
     for face, tiles in face_tiles.items():
         for tile in tiles:
             tile.configure(
@@ -409,6 +475,9 @@ def reset_cube():
                 # hover_color=face_colours[face]["hover"],
                 hover_color="#404040"
             )
+    print("\nCube reset:")
+    for face in cube:
+        print(face, cube[face])
 # reset button
 reset_button = customtkinter.CTkButton(
     buttons_frame,

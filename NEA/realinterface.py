@@ -2,6 +2,13 @@ from tkinter import *
 import customtkinter
 from PIL import Image
 
+from main import (
+    cube,
+    apply_move,
+    scramble_cube,
+    reset_cube_to_empty,
+    reset_cube_to_solved
+)
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light
@@ -21,6 +28,50 @@ face_colours = {
     "B": {"main": "#0045AD", "hover": "#00378A"},
     "D": {"main": "#FFD500", "hover": "#CCAA00"}
 }
+colour_to_letter = {
+    "#FFFFFF": "W",
+    "#FFD500": "Y",
+    "#B90000": "R",
+    "#FF5900": "O",
+    "#009B48": "G",
+    "#0045AD": "B"
+}
+
+def update_gui_from_cube():
+    letter_to_colour = {
+        "W": "#FFFFFF",
+        "Y": "#FFD500",
+        "R": "#B90000",
+        "O": "#FF5900",
+        "G": "#009B48",
+        "B": "#0045AD",
+        "x": "#505050"
+    }
+
+    letter_to_hover = {
+        "W": "#CCCCCC",
+        "Y": "#CCAA00",
+        "R": "#940000",
+        "O": "#CC4700",
+        "G": "#007C3A",
+        "B": "#00378A",
+        "x": "#404040"
+    }
+
+    for face, tiles in face_tiles.items():
+        for index, tile in enumerate(tiles):
+            row = index // 3
+            col = index % 3
+
+            letter = cube[face][row][col]
+
+            tile.configure(
+                fg_color=letter_to_colour[letter],
+                hover_color=letter_to_hover[letter]
+            )
+
+
+
 
 # --- Colour Selection ---
 cycle_mode = True
@@ -264,7 +315,7 @@ for face in faces:
 
 
 # --- Paint Function (Tile Click) ---
-def paint_tile(tile):
+def paint_tile(tile, face, row, col):
     global cycle_mode, active_colour
 
     if cycle_mode:
@@ -279,17 +330,27 @@ def paint_tile(tile):
         else:
             next_index = 0
 
-        tile.configure(
-            fg_color=all_colours[next_index],
-            hover_color=all_hovers[next_index]
-        )
+        new_colour = all_colours[next_index]
+        new_hover = all_hovers[next_index]
 
     else:
         # normal painting mode
-        tile.configure(
-            fg_color=active_colour["main"],
-            hover_color=active_colour["hover"]
-        )
+        new_colour = active_colour["main"]
+        new_hover = active_colour["hover"]
+    
+    # update GUI
+    tile.configure(
+        fg_color=new_colour,
+        hover_color=new_hover
+    )
+
+    if new_colour in colour_to_letter:
+        cube[face][row][col] = colour_to_letter[new_colour]
+    
+    #temp
+    print("\nCube state after change:")
+    for face in cube:
+        print(face, cube[face])
 
 # --- Cube Tiles ---
 cube_size = 3
@@ -318,7 +379,7 @@ for face, frame in face_frames.items():
                 command=lambda t=None: None  # placeholder for click action
             )
 
-            tile.configure(command=lambda t=tile: paint_tile(t))
+            tile.configure(command=lambda t=tile, f=face, r=row, c=col: paint_tile(t, f, r, c))
             tile.grid(row=row, column=col, padx=tile_padding, pady=tile_padding)
             face_tiles[face].append(tile)
 
@@ -352,11 +413,13 @@ CFOP_radio_button = customtkinter.CTkRadioButton(solver_options_frame, text="CFO
 CFOP_radio_button.grid(row=0, column=1, padx=0, pady=0)
 
 
+
 # --- Load Icons ---
 fullscreen_icon = customtkinter.CTkImage(Image.open("NEA/IMAGES/fullscreen.png"), size=(30, 30))
 windowed_icon = customtkinter.CTkImage(Image.open("NEA/IMAGES/windowed.png"), size=(30, 30))
 light_mode_icon = customtkinter.CTkImage(Image.open("NEA/IMAGES/light_mode.png"), size=(30, 30))
 dark_mode_icon = customtkinter.CTkImage(Image.open("NEA/IMAGES/dark_mode.png"), size=(30, 30))
+
 
 
 # --- Fullscreen Toggle Button ---
@@ -371,7 +434,6 @@ fullscreen_button = customtkinter.CTkButton(
     command=toggle_fullscreen
 )
 fullscreen_button.place(relx=0.99, rely=0.985, anchor="se")
-
 
 # --- Theme Toggle Button ---
 theme_button = customtkinter.CTkButton(
@@ -396,20 +458,33 @@ buttons_frame.pack(pady=50)
 solve_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Solve Cube", font=("Arial", 16))
 solve_button.grid(row=0, column=0, padx=20, pady=20)
 
+# scramble function
+def on_scramble():
+    scramble_cube()
+    update_gui_from_cube()
+
+    print("\nCube scrambled:")
+    for face in cube:
+        print(face, cube[face])
 # scramble button
-scramble_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Scramble Cube", font=("Arial", 16))
+scramble_button = customtkinter.CTkButton(
+    buttons_frame,
+    width=150,
+    height=50,
+    text="Scramble Cube",
+    font=("Arial", 16),
+    command=on_scramble
+)
 scramble_button.grid(row=0, column=1, padx=20, pady=20)
 
 # reset function
 def reset_cube():
-    for face, tiles in face_tiles.items():
-        for tile in tiles:
-            tile.configure(
-                # fg_color=face_colours[face]["main"],
-                fg_color="#505050",
-                # hover_color=face_colours[face]["hover"],
-                hover_color="#404040"
-            )
+    reset_cube_to_empty()
+    update_gui_from_cube()
+
+    print("\nCube reset:")
+    for face in cube:
+        print(face, cube[face])
 # reset button
 reset_button = customtkinter.CTkButton(
     buttons_frame,

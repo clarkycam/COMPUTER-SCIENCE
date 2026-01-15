@@ -102,10 +102,10 @@ def move_B(cube):
     r_col = [cube["R"][i][2] for i in range(3)]
     d_bot = cube["D"][2][:]
     l_col = [cube["L"][i][0] for i in range(3)]
-    cube["R"][0][2], cube["R"][1][2], cube["R"][2][2] = d_bot
-    cube["D"][2] = l_col[::-1]
-    cube["L"][0][0], cube["L"][1][0], cube["L"][2][0] = u_top
-    cube["U"][0] = r_col[::-1]
+    cube["R"][0][2], cube["R"][1][2], cube["R"][2][2] = d_bot[::-1]
+    cube["D"][2] = l_col
+    cube["L"][0][0], cube["L"][1][0], cube["L"][2][0] = u_top[::-1]
+    cube["U"][0] = r_col
 
 def move_L(cube):
     cube["L"] = rotate_face_cw(cube["L"])
@@ -165,27 +165,27 @@ def move_R_prime(cube):
 def apply_move(move):
     if move == "U":
         move_U(cube)
-    elif move == "U'":
+    elif move == "Uprime":
         move_U_prime(cube)
     elif move == "D":
         move_D(cube)
-    elif move == "D'":
+    elif move == "Dprime":
         move_D_prime(cube)
     elif move == "L":
         move_L(cube)
-    elif move == "L'":
+    elif move == "Lprime":
         move_L_prime(cube)
     elif move == "R":
         move_R(cube)
-    elif move == "R'":
+    elif move == "Rprime":
         move_R_prime(cube)
     elif move == "F":
         move_F(cube)
-    elif move == "F'":
+    elif move == "Fprime":
         move_F_prime(cube)
     elif move == "B":
         move_B(cube)
-    elif move == "B'":
+    elif move == "Bprime":
         move_B_prime(cube)
 
 
@@ -193,16 +193,22 @@ def apply_move(move):
 # --- Button Functions ---
 # Scramble
 SCRAMBLE_MOVES = [
-    "U", "U'",
-    "D", "D'",
-    "L", "L'",
-    "R", "R'",
-    "F", "F'",
-    "B", "B'"
+    "U", "Uprime",
+    "D", "Dprime",
+    "L", "Lprime",
+    "R", "Rprime",
+    "F", "Fprime",
+    "B", "Bprime"
 ]
 
 def generate_scramble(length=20):
-    return [random.choice(SCRAMBLE_MOVES) for _ in range(length)]
+    scramble = []
+    for _ in range(length):
+        move = random.choice(SCRAMBLE_MOVES)
+        scramble.append(move)
+    
+    print(scramble)
+    return scramble
 
 def scramble_cube():
     # reset to solved

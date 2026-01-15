@@ -470,8 +470,25 @@ theme_button.place(relx=0.01, rely=0.985, anchor="sw")
 buttons_frame = customtkinter.CTkFrame(root, corner_radius=10, width=800, height=200)
 buttons_frame.pack(pady=50)
 
+# solve function
+def on_solve():
+    method = "KOCIEMBA" if radio_var.get() == 1 else "CFOP"
+
+    try:
+        moves = solve_cube(cube, method)
+        print("Solution:", moves)
+
+    except ValueError as e:
+        print("Solve failed:", e)
 # solve button
-solve_button = customtkinter.CTkButton(buttons_frame, width=150, height=50, text="Solve Cube", font=("Arial", 16))
+solve_button = customtkinter.CTkButton(
+    buttons_frame,
+    width=150,
+    height=50,
+    text="Solve Cube",
+    font=("Arial", 16),
+    command=on_solve
+    )
 solve_button.grid(row=0, column=0, padx=20, pady=20)
 
 # scramble function

@@ -1,7 +1,6 @@
 from tkinter import *
 import customtkinter
 from PIL import Image
-
 from main import (
     cube,
     apply_move,
@@ -9,6 +8,8 @@ from main import (
     reset_cube_to_empty,
     reset_cube_to_solved
 )
+from solver import solve_cube
+
 
 # --- Window Setup ---
 customtkinter.set_appearance_mode("dark") # Modes: system (default), dark, light

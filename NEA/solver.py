@@ -1,5 +1,5 @@
 import kociemba
-
+from cfop import solve_cfop
 
 
 def solve_cube(cube, method):
@@ -18,10 +18,6 @@ def solve_kociemba(cube):
         raise ValueError("Cube is not solvable") from e
 
     return solution
-
-def solve_cfop(cube):
-    # placeholder
-    return
 
 def cube_to_string(cube):
     # Converts the cube dictionary to a string representation

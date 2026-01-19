@@ -476,6 +476,11 @@ def on_solve():
 
     try:
         moves = solve_cube(cube, method)
+
+        if not moves:
+            print("No solution returned")
+            return
+
         print("Solution:", moves)
 
     except ValueError as e:

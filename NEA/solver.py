@@ -1,5 +1,6 @@
+#solver.py
 import kociemba
-from cfop import solve_cfop
+from cfop import solve_cross
 
 
 def solve_cube(cube, method):
@@ -7,7 +8,7 @@ def solve_cube(cube, method):
     if method == "KOCIEMBA":
         return solve_kociemba(cube)
     elif method == "CFOP":
-        return solve_cfop(cube)
+        return solve_cross(cube)
 
 def solve_kociemba(cube):
     cube_string = cube_to_kociemba_string(cube)

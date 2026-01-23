@@ -1,3 +1,4 @@
+#main.py
 import random
 
 
@@ -13,7 +14,15 @@ cube = {
     "B": [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]],
     "L": [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]],
     "R": [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]]
+    
+    # "U": [['O', 'R', 'W'], ['W', 'W', 'W'], ['O', 'W', 'R']],
+    # "D": [['B', 'O', 'R'], ['B', 'Y', 'Y'], ['W', 'R', 'G']],
+    # "F": [['Y', 'G', 'G'], ['R', 'G', 'Y'], ['W', 'G', 'B']],
+    # "B": [['O', 'G', 'Y'], ['B', 'B', 'G'], ['R', 'Y', 'G']],
+    # "L": [['G', 'O', 'B'], ['Y', 'O', 'B'], ['O', 'O', 'R']],
+    # "R": [['Y', 'R', 'B'], ['O', 'R', 'W'], ['Y', 'B', 'W']]
 }
+
 
 EMPTY_CUBE = {
     "U": [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]],
@@ -162,31 +171,57 @@ def move_R_prime(cube):
 
 
 # --- Apply Moves ---
-def apply_move(move):
-    if move == "U":
-        move_U(cube)
-    elif move == "Uprime":
-        move_U_prime(cube)
-    elif move == "D":
-        move_D(cube)
-    elif move == "Dprime":
-        move_D_prime(cube)
-    elif move == "L":
-        move_L(cube)
-    elif move == "Lprime":
-        move_L_prime(cube)
-    elif move == "R":
-        move_R(cube)
-    elif move == "Rprime":
-        move_R_prime(cube)
-    elif move == "F":
-        move_F(cube)
-    elif move == "Fprime":
-        move_F_prime(cube)
-    elif move == "B":
-        move_B(cube)
-    elif move == "Bprime":
-        move_B_prime(cube)
+# def apply_move(move):
+#     if move == "U":
+#         move_U(cube)
+#     elif move == "Uprime":
+#         move_U_prime(cube)
+#     elif move == "D":
+#         move_D(cube)
+#     elif move == "Dprime":
+#         move_D_prime(cube)
+#     elif move == "L":
+#         move_L(cube)
+#     elif move == "Lprime":
+#         move_L_prime(cube)
+#     elif move == "R":
+#         move_R(cube)
+#     elif move == "Rprime":
+#         move_R_prime(cube)
+#     elif move == "F":
+#         move_F(cube)
+#     elif move == "Fprime":
+#         move_F_prime(cube)
+#     elif move == "B":
+#         move_B(cube)
+#     elif move == "Bprime":
+#         move_B_prime(cube)
+def apply_move(move, target_cube=None):
+    # Use the global cube if no specific cube is provided
+    if target_cube is None:
+        global cube
+        target_cube = cube
+
+    # Handle Double Moves (e.g., R2, U2)
+    if len(move) > 1 and move.endswith("2"):
+        base_move = move[0]
+        # Recursively call the base move twice
+        apply_move(base_move, target_cube)
+        apply_move(base_move, target_cube)
+        return
+
+    # Map move strings to functions
+    move_map = {
+        "U": move_U, "Uprime": move_U_prime,
+        "D": move_D, "Dprime": move_D_prime,
+        "L": move_L, "Lprime": move_L_prime,
+        "R": move_R, "Rprime": move_R_prime,
+        "F": move_F, "Fprime": move_F_prime,
+        "B": move_B, "Bprime": move_B_prime
+    }
+
+    if move in move_map:
+        move_map[move](target_cube)
 
 
 
@@ -206,8 +241,9 @@ def generate_scramble(length=20):
     for _ in range(length):
         move = random.choice(SCRAMBLE_MOVES)
         scramble.append(move)
-    
-    print(scramble)
+
+    formatted_scramble = ' '.join([m.replace("prime", "'") for m in scramble])
+    print(f"Scramble: {scramble}\nFormatted: {formatted_scramble}")
     return scramble
 
 def scramble_cube():

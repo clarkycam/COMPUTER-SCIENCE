@@ -441,23 +441,30 @@ def do_move(move):
 
 def apply_sequence_from_entry(entry_widget):
     sequence = entry_widget.get().strip()
+    # reset_cube_to_solved()
     if not sequence:
+        update_gui_from_cube()
         return
 
     # allow both U' and Uprime styles
     moves = sequence.replace("'", "prime").split()
-    reset_cube_to_solved()
+    for move in moves:
+        if move not in ["U", "Uprime", "U2", "D", "Dprime", "D2", 
+                        "L", "Lprime", "L2", "R", "Rprime", "R2", 
+                        "F", "Fprime", "F2", "B", "Bprime", "B2"]:
+            print(f"Invalid move in scramble: {move}")
+            return
 
     for move in moves:
         apply_move(move)
 
     update_gui_from_cube()
-    print("Applied sequence:", moves)
+    print("Applied scramble:", moves)
 
 def clear_entry(entry_widget):
     entry_widget.delete(0, "end")
 
-# --- Manual Move Controls (Vertical Layout) ---
+# --- Manual Move Controls ---
 moves_frame = customtkinter.CTkFrame(
     options_frame,
     corner_radius=10,
@@ -481,24 +488,10 @@ moves = [
 ]
 
 for row, (move, move_prime) in enumerate(moves):
-    btn = customtkinter.CTkButton(
-        moves_frame,
-        text=move,
-        width=btn_width,
-        height=btn_height,
-        font=move_font,
-        command=lambda m=move: do_move(m)
-    )
+    btn = customtkinter.CTkButton(moves_frame,text=move,width=btn_width,height=btn_height,font=move_font,command=lambda m=move: do_move(m))
     btn.grid(row=row, column=0, padx=4, pady=3)
 
-    btn_p = customtkinter.CTkButton(
-        moves_frame,
-        text=move_prime.replace("prime", "'"),
-        width=btn_width,
-        height=btn_height,
-        font=move_font,
-        command=lambda m=move_prime: do_move(m)
-    )
+    btn_p = customtkinter.CTkButton(moves_frame,text=move_prime.replace("prime", "'"),width=btn_width,height=btn_height,font=move_font,command=lambda m=move_prime: do_move(m))
     btn_p.grid(row=row, column=1, padx=4, pady=3)
 
 # --- Scramble / Move Entry ---

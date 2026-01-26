@@ -30,7 +30,7 @@ def is_cross_solved(cube):
 def get_cross_estimate(cube):
     # counts how many white edges arent on the top face
     misplaced = 0
-    # List of the 4 target edge positions for white cross
+
     if cube["U"][0][1] != 'W': misplaced += 1
     if cube["U"][1][0] != 'W': misplaced += 1
     if cube["U"][1][2] != 'W': misplaced += 1
@@ -62,13 +62,13 @@ def search(cube, g, threshold, path):
         return True, path
 
     for move in MOVES:
-        # Avoid redundant moves (e.g. R followed by R')
+        # dont repeat same face move
         if path:
             if path[-1][0] == move[0]: continue
             
         apply_move(move, cube)
         found, res = search(cube, g + 1, threshold, path + [move])
         if found: return True, res
-        apply_move(INVERSE[move], cube) # Backtrack
+        apply_move(INVERSE[move], cube) # backtrack
 
     return False, []

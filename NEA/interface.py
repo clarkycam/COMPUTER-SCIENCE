@@ -1,6 +1,7 @@
 #interface.py
 from tkinter import *
 import customtkinter
+
 from PIL import Image
 from main import (
     cube,
@@ -435,13 +436,13 @@ CFOP_radio_button = customtkinter.CTkRadioButton(solver_options_frame, text="CFO
 CFOP_radio_button.grid(row=0, column=1, padx=0, pady=0)
 
 # --- Manual Move Controls Functions ---
-def do_move(move):
+def apply_move_gui(move):
     apply_move(move)
     update_gui_from_cube()
 
 def apply_sequence_from_entry(entry_widget):
     sequence = entry_widget.get().strip()
-    # reset_cube_to_solved()
+    reset_cube_to_solved()
     if not sequence:
         update_gui_from_cube()
         return
@@ -488,10 +489,10 @@ moves = [
 ]
 
 for row, (move, move_prime) in enumerate(moves):
-    btn = customtkinter.CTkButton(moves_frame,text=move,width=btn_width,height=btn_height,font=move_font,command=lambda m=move: do_move(m))
+    btn = customtkinter.CTkButton(moves_frame,text=move,width=btn_width,height=btn_height,font=move_font,command=lambda m=move: apply_move_gui(m))
     btn.grid(row=row, column=0, padx=4, pady=3)
 
-    btn_p = customtkinter.CTkButton(moves_frame,text=move_prime.replace("prime", "'"),width=btn_width,height=btn_height,font=move_font,command=lambda m=move_prime: do_move(m))
+    btn_p = customtkinter.CTkButton(moves_frame,text=move_prime.replace("prime", "'"),width=btn_width,height=btn_height,font=move_font,command=lambda m=move_prime: apply_move_gui(m))
     btn_p.grid(row=row, column=1, padx=4, pady=3)
 
 # --- Scramble / Move Entry ---
@@ -504,7 +505,7 @@ entry_frame.grid(row=3, column=0, padx=10, pady=10, columnspan=2)
 
 scramble_entry = customtkinter.CTkEntry(
     entry_frame,
-    width=170,
+    width=175,
     height=30,
     placeholder_text="Enter moves (e.g. R U R' U')"
 )
@@ -527,7 +528,6 @@ clear_button = customtkinter.CTkButton(
     command=lambda: clear_entry(scramble_entry)
 )
 clear_button.grid(row=1, column=1, padx=4, pady=3)
-
 
 
 
@@ -571,26 +571,90 @@ theme_button.place(relx=0.01, rely=0.985, anchor="sw")
 buttons_frame = customtkinter.CTkFrame(root, corner_radius=10, width=800, height=200)
 buttons_frame.pack(pady=50)
 
+
+# --- Output Window ---
+def open_output_window(solution_moves, method, error_message):
+    # open a new window to display the solution
+    output_window = customtkinter.CTkToplevel(root)
+    output_window.title("Rubik's Cube Solver Output")
+    output_window.geometry("800x600")
+
+    # keep window on top
+    output_window.lift()
+    output_window.focus_force()
+    output_window.attributes('-topmost', True)
+    output_window.after(100, lambda: output_window.attributes('-topmost', False))
+    
+    # Title label
+    title = customtkinter.CTkLabel(
+        output_window,
+        text=f"Solution - {method} Method",
+        font=("Arial", 24, "bold")
+    )
+    title.pack(pady=20)
+    # if solution_moves is an error message
+
+    # Format moves for display replace "prime" with "'" for readability and joins it
+    print(solution_moves)
+    if method == "CFOP":
+        solution_moves = ' '.join([move.replace("prime", "'") for move in solution_moves])
+    print(solution_moves)
+    formatted_moves = solution_moves.replace(" ", "  ")
+
+    # Solution moves label
+    moves_label = customtkinter.CTkLabel(
+        output_window,
+        text="Solution Moves:",
+        font=("Arial", 18)
+    )
+    moves_label.pack(pady=10)
+
+    # Solution moves text box
+    moves_text = customtkinter.CTkTextbox(
+        output_window,
+        width=700,
+        height=150,
+        font=("Arial", 16)
+    )
+    moves_text.insert("0.0", (formatted_moves+error_message))
+    moves_text.configure(state="disabled")
+    moves_text.pack(pady=10)
+
+    # Close button
+    close_button = customtkinter.CTkButton(
+        output_window,
+        text="Close",
+        font=("Arial", 16),
+        width=150,
+        height=40,
+        command=output_window.destroy
+    )
+    close_button.pack(pady=20)
+
+
 # solve function
-# def on_solve():
-#     method = "KOCIEMBA" if radio_var.get() == 1 else "CFOP"
-
-#     try:
-#         moves = solve_cube(cube, method)
-
-#         if not moves:
-#             print("No solution returned")
-#             return
-
-#         print("Solution:", moves)
-
-#     except ValueError as e:
-#         print("Solve failed:", e)
 import threading
 import copy
 
 def on_solve():
     method = "KOCIEMBA" if radio_var.get() == 1 else "CFOP"
+
+    # check if colours appear 9 times
+    colour_counts = {}
+    for face in cube:
+        for row in cube[face]:
+            for tile in row:
+                colour_counts[tile] = colour_counts.get(tile, 0) + 1
+    # open output window with the all of the colours with the wrong count
+    invalid_colours = []
+    for colour, count in colour_counts.items():
+        if count != 9:
+            invalid_colours.append(f"{colour}: {count} times")
+    if invalid_colours:
+        error_message = "Invalid cube configuration:\n" + "\n".join(invalid_colours)
+        print(error_message)
+        open_output_window("", method, error_message)
+        return
 
     def run_solver():
         # Disable button to prevent double-clicks
@@ -603,17 +667,22 @@ def on_solve():
 
             if not moves:
                 print("No solution found or already solved.")
+                solve_button.configure(state="normal", text="Solve Cube")
+                solve_button.after(0, lambda: open_output_window("", method, "Cube is already solved."))
             else:
                 print("Solution found:", moves)
+                # Open the output window with the solution
+                root.after(0, lambda: open_output_window(moves, method, ""))
+                solve_button.configure(state="normal", text="Solve Cube")
                 
         except Exception as e:
             print("Solve failed:", e)
-        finally:
-            # Re-enable button
             solve_button.configure(state="normal", text="Solve Cube")
+            solve_button.after(0, lambda: open_output_window("", method, "Cube is not solvable."))
 
     # Run in a background thread so the window doesn't freeze
     threading.Thread(target=run_solver, daemon=True).start()
+
 # solve button
 solve_button = customtkinter.CTkButton(
     buttons_frame,

@@ -171,31 +171,6 @@ def move_R_prime(cube):
 
 
 # --- Apply Moves ---
-# def apply_move(move):
-#     if move == "U":
-#         move_U(cube)
-#     elif move == "Uprime":
-#         move_U_prime(cube)
-#     elif move == "D":
-#         move_D(cube)
-#     elif move == "Dprime":
-#         move_D_prime(cube)
-#     elif move == "L":
-#         move_L(cube)
-#     elif move == "Lprime":
-#         move_L_prime(cube)
-#     elif move == "R":
-#         move_R(cube)
-#     elif move == "Rprime":
-#         move_R_prime(cube)
-#     elif move == "F":
-#         move_F(cube)
-#     elif move == "Fprime":
-#         move_F_prime(cube)
-#     elif move == "B":
-#         move_B(cube)
-#     elif move == "Bprime":
-#         move_B_prime(cube)
 def apply_move(move, target_cube=None):
     # Use the global cube if no specific cube is provided
     if target_cube is None:

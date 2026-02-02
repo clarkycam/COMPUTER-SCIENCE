@@ -1,14 +1,30 @@
 #solver.py
 import kociemba
 from cfop import solve_cross
+from main import SOLVED_CUBE
 
 
 def solve_cube(cube, method):
-    # Takes a cube and a solving method, returns a list of moves to solve the cube
+    # takes a cube and a solving method, returns a list of moves to solve the cube
+    if not is_valid_cube(cube):
+        raise ValueError("Cube is not solvable")
+    if cube == SOLVED_CUBE:
+        moves = ""
+        return moves
     if method == "KOCIEMBA":
         return solve_kociemba(cube)
     elif method == "CFOP":
         return solve_cross(cube)
+    
+def is_valid_cube(cube):
+    # validates the cube and checks if it is solvable
+
+    solution = solve_kociemba(cube)
+    if solution:
+        print("Cube is solvable")
+        return True
+    print("Cube is not solvable")
+    return False
 
 def solve_kociemba(cube):
     cube_string = cube_to_kociemba_string(cube)
@@ -21,7 +37,7 @@ def solve_kociemba(cube):
     return solution
 
 def cube_to_string(cube):
-    # Converts the cube dictionary to a string representation
+    # converts the cube dictionary to a string representation
     order = ["U", "R", "F", "D", "L", "B"]
     result = ""
 
@@ -33,7 +49,7 @@ def cube_to_string(cube):
     return result
 
 def cube_to_kociemba_string(cube):
-    # Converts a cube to Kociemba format
+    # converts a cube to Kociemba format
     order = ["U", "R", "F", "D", "L", "B"]
     cube_string = ""
 
@@ -54,11 +70,11 @@ def cube_to_kociemba_string(cube):
     for char in cube_string:
         kociemba_string += convert[char]
 
-    print(kociemba_string)    
+    # print(kociemba_string)    
     return kociemba_string
 
 def is_solved(cube):
-    # Checks if the cube is in a solved state
+    # checks if the cube is in a solved state
     for face in cube:
         colour = cube[face][1][1]
         for row in cube[face]:

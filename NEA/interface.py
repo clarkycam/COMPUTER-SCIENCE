@@ -387,7 +387,8 @@ for face, frame in face_frames.items():
                 frame,
                 width=tile_size,
                 height=tile_size,
-                text="",
+                text=f"{face}, {row}, {col}",
+                text_color="#000000",
                 fg_color="#505050",
                 # fg_color=face_colours[face]["main"],
                 border_width=1,
@@ -583,7 +584,7 @@ def open_output_window(solution_moves, method, error_message):
     output_window.lift()
     output_window.focus_force()
     output_window.attributes('-topmost', True)
-    output_window.after(100, lambda: output_window.attributes('-topmost', False))
+    # output_window.after(100, lambda: output_window.attributes('-topmost', False))
     
     # Title label
     title = customtkinter.CTkLabel(
@@ -592,13 +593,10 @@ def open_output_window(solution_moves, method, error_message):
         font=("Arial", 24, "bold")
     )
     title.pack(pady=20)
-    # if solution_moves is an error message
 
     # Format moves for display replace "prime" with "'" for readability and joins it
-    print(solution_moves)
     if method == "CFOP":
         solution_moves = ' '.join([move.replace("prime", "'") for move in solution_moves])
-    print(solution_moves)
     formatted_moves = solution_moves.replace(" ", "  ")
 
     # Solution moves label
@@ -620,16 +618,50 @@ def open_output_window(solution_moves, method, error_message):
     moves_text.configure(state="disabled")
     moves_text.pack(pady=10)
 
+    def apply_sequence_from_string(moves_string):
+
+        if not moves_string.strip():
+            return
+
+        moves = moves_string.replace("'", "prime").split()
+        for move in moves:
+            if move not in ["U", "Uprime", "U2", "D", "Dprime", "D2", 
+                            "L", "Lprime", "L2", "R", "Rprime", "R2", 
+                            "F", "Fprime", "F2", "B", "Bprime", "B2"]:
+                print(f"Invalid move in solution: {move}")
+                return
+
+        for move in moves:
+            apply_move(move)
+
+        update_gui_from_cube()
+        print("Applied solution:", moves)
+    
+    # buttons frame
+    buttons_frame = customtkinter.CTkFrame(output_window, corner_radius=10, width=400, height=200)
+    buttons_frame.pack(pady=20)
+
+    # Apply Solution Button
+    apply_button = customtkinter.CTkButton(
+        buttons_frame,
+        text="Apply",
+        font=("Arial", 16),
+        width=150,
+        height=40,
+        command=lambda: apply_sequence_from_string(moves_text.get("0.0", "end-1c"))
+    )
+    apply_button.grid(row=0, column=0, padx=10, pady=10)
+
     # Close button
     close_button = customtkinter.CTkButton(
-        output_window,
+        buttons_frame,
         text="Close",
         font=("Arial", 16),
         width=150,
         height=40,
         command=output_window.destroy
     )
-    close_button.pack(pady=20)
+    close_button.grid(row=0, column=1, padx=10, pady=10)
 
 
 # solve function

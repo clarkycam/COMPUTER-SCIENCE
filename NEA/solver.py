@@ -1,6 +1,6 @@
 #solver.py
 import kociemba
-from cfop import solve_cross
+from cfop import solve_cfop, is_f2l_solved
 from main import SOLVED_CUBE
 
 
@@ -14,7 +14,7 @@ def solve_cube(cube, method):
     if method == "KOCIEMBA":
         return solve_kociemba(cube)
     elif method == "CFOP":
-        return solve_cross(cube)
+        return solve_cfop(cube)
     
 def is_valid_cube(cube):
     # validates the cube and checks if it is solvable

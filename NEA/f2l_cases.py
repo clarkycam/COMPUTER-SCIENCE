@@ -37,22 +37,18 @@ F2L_CASES = {
     },
     
     "top_5": {
-        # d (R' U2 R) d' (R U R') => U' (B' U2 B) U (R U R')
-        "algorithm": ["Uprime", "Bprime", "U2", "B", "U", "R", "U", "Rprime"]
+        "algorithm": ["Rprime", "U2", "R2", "U", "R2", "U", "R"]
     },
     
     "top_6": {
-        # U' R U2 R' d (R' U' R) => U' R U2 R' U' (B' U' B)
         "algorithm": ["Uprime", "R", "U2", "Rprime", "U", "Fprime", "Uprime", "F"]
     },
     
     "top_7": {
-        # R U' R' U d (R' U' R) => R U' R' U U' (B' U' B)
         "algorithm": ["R", "Uprime", "Rprime", "U2", "Fprime", "Uprime", "F"]
     },
     
     "top_8": {
-        # F' U F U' d' (F U F') => F' U F U' U (L U L')
         "algorithm": ["U", "Rprime", "F", "R", "Fprime", "U", "R", "U", "Rprime"]
     },
     
@@ -98,20 +94,18 @@ F2L_CASES = {
     },
     
     "corner_up_7": {
-        # (R U R' U') U' (R U R' U') (R U R')
         "algorithm": ["R", "U", "Rprime", "Uprime", "Uprime", "R", "U", "Rprime", "Uprime", "R", "U", "Rprime"]
     },
     
     "corner_up_8": {
-        # y' (R' U' R U) U (R' U' R U) (R' U' R)
-        # y' rotation makes this: L' U' L U U L' U' L U L' U' L
         "algorithm": ["F", "U", "R", "Uprime", "Rprime", "Fprime", "R", "Uprime", "Rprime"]
     }
 }
 
 # Move translation tables for each slot
+# Each slot rotates the cube so that slot becomes the "front-right" position
 MOVE_TRANSLATION = {
-    "red-green": {  # F-R slot (no translation needed)
+    "red-green": {  # F-R slot (no rotation needed - this IS front-right)
         "R": "R", "Rprime": "Rprime", "R2": "R2",
         "L": "L", "Lprime": "Lprime", "L2": "L2",
         "F": "F", "Fprime": "Fprime", "F2": "F2",
@@ -119,23 +113,23 @@ MOVE_TRANSLATION = {
         "U": "U", "Uprime": "Uprime", "U2": "U2",
         "D": "D", "Dprime": "Dprime", "D2": "D2"
     },
-    "orange-green": {  # F-L slot (mirror R to L)
-        "R": "L", "Rprime": "Lprime", "R2": "L2",
-        "L": "R", "Lprime": "Rprime", "L2": "R2",
-        "F": "F", "Fprime": "Fprime", "F2": "F2",
-        "B": "B", "Bprime": "Bprime", "B2": "B2",
+    "orange-green": {  # F-L slot (rotate 90° CCW: F stays, R→F, B→R, L→B)
+        "R": "F", "Rprime": "Fprime", "R2": "F2",
+        "L": "B", "Lprime": "Bprime", "L2": "B2",
+        "F": "L", "Fprime": "Lprime", "F2": "L2",
+        "B": "R", "Bprime": "Rprime", "B2": "R2",
         "U": "U", "Uprime": "Uprime", "U2": "U2",
         "D": "D", "Dprime": "Dprime", "D2": "D2"
     },
-    "red-blue": {  # B-R slot (rotate 180°: F to B)
-        "R": "R", "Rprime": "Rprime", "R2": "R2",
-        "L": "L", "Lprime": "Lprime", "L2": "L2",
-        "F": "B", "Fprime": "Bprime", "F2": "B2",
-        "B": "F", "Bprime": "Fprime", "B2": "F2",
+    "red-blue": {  # B-R slot (rotate 180°: F→B, R stays, B→F, L→L)
+        "R": "B", "Rprime": "Bprime", "R2": "B2",
+        "L": "F", "Lprime": "Fprime", "L2": "F2",
+        "F": "R", "Fprime": "Rprime", "F2": "R2",
+        "B": "L", "Bprime": "Lprime", "B2": "L2",
         "U": "U", "Uprime": "Uprime", "U2": "U2",
         "D": "D", "Dprime": "Dprime", "D2": "D2"
     },
-    "orange-blue": {  # B-L slot (rotate 180° + mirror)
+    "orange-blue": {  # B-L slot (rotate 90° CW: F→R, R→B, B→L, L→F)
         "R": "L", "Rprime": "Lprime", "R2": "L2",
         "L": "R", "Lprime": "Rprime", "L2": "R2",
         "F": "B", "Fprime": "Bprime", "F2": "B2",
@@ -169,45 +163,89 @@ def translate_algorithm(algorithm, slot_name):
     return translated
 
 
+def translate_corner_position_to_relative(actual_pos, slot_name):
+    """
+    Translate actual corner position to slot-relative position.
+    For algorithms, we always treat the slot as if it's at F-R, so:
+    - The corner that's "top-right" relative to the slot becomes "UFR"
+    
+    Args:
+        actual_pos: Actual position on cube ("UFR", "UFL", "UBR", "UBL")
+        slot_name: Which slot we're solving
+    
+    Returns:
+        Relative position as if solving F-R slot
+    """
+    # Map actual positions to relative positions for each slot
+    position_maps = {
+        "red-green": {  # F-R slot - no translation
+            "UFR": "UFR", "UBR": "UBR", "UBL": "UBL", "UFL": "UFL"
+        },
+        "orange-green": {  # F-L slot - rotate 90° CCW
+            "UFL": "UFR", "UFR": "UBR", "UBR": "UBL", "UBL": "UFL"
+        },
+        "red-blue": {  # B-R slot - rotate 180°
+            "UBR": "UFR", "UBL": "UBR", "UFL": "UBL", "UFR": "UFL"
+        },
+        "orange-blue": {  # B-L slot - rotate 90° CW
+            "UBL": "UFR", "UFL": "UBR", "UFR": "UBL", "UBR": "UFL"
+        }
+    }
+    
+    return position_maps.get(slot_name, {}).get(actual_pos, actual_pos)
+
+
+def translate_edge_position_to_relative(actual_pos, slot_name):
+    """
+    Translate actual edge position to slot-relative position.
+    
+    Args:
+        actual_pos: Actual position on cube ("UF", "UR", "UB", "UL")
+        slot_name: Which slot we're solving
+    
+    Returns:
+        Relative position as if solving F-R slot
+    """
+    position_maps = {
+        "red-green": {  # F-R slot - no translation
+            "UF": "UF", "UR": "UR", "UB": "UB", "UL": "UL"
+        },
+        "orange-green": {  # F-L slot - rotate 90° CCW
+            "UL": "UF", "UF": "UR", "UR": "UB", "UB": "UL"
+        },
+        "red-blue": {  # B-R slot - rotate 180°
+            "UR": "UF", "UB": "UR", "UL": "UB", "UF": "UL"
+        },
+        "orange-blue": {  # B-L slot - rotate 90° CW
+            "UB": "UF", "UL": "UR", "UF": "UB", "UR": "UL"
+        }
+    }
+    
+    return position_maps.get(slot_name, {}).get(actual_pos, actual_pos)
+
+
 def detect_f2l_case(cube, corner_coords, edge_coords, slot_name):
     """
     Detect which F2L case we're in based on corner and edge positions/orientations.
-    Currently only supports red-green (F-R) slot.
-    
-    Args:
-        cube: Current cube state
-        corner_coords: List of (face, row, col) tuples for the corner
-        edge_coords: List of (face, row, col) tuples for the edge
-        slot_name: Which slot ("red-green" only for now)
-    
-    Returns:
-        String key matching one of the F2L_CASES, or None if not found
+    Supports all four F2L slots by translating to slot-relative positions.
     """
-    if slot_name != "red-green":
-        return None
-    
-    # For red-green slot: Red is F face, Green is R face, Yellow on bottom
-    
-    # === ANALYZE CORNER ===
-    # Find which U position the corner is at
+    # Get actual positions
     corner_u_pos = get_corner_u_position(corner_coords)
-    
-    # Find corner orientation (which color is facing up)
-    corner_orientation = get_corner_orientation(cube, corner_coords, slot_name)
-    
-    # === ANALYZE EDGE ===
-    # Find which U edge position
     edge_u_pos = get_edge_u_position(edge_coords)
     
-    # Find edge orientation (which color is facing up)
+    # Translate to slot-relative positions (as if we're always solving F-R)
+    corner_relative_pos = translate_corner_position_to_relative(corner_u_pos, slot_name)
+    edge_relative_pos = translate_edge_position_to_relative(edge_u_pos, slot_name)
+    
+    # Get orientations
+    corner_orientation = get_corner_orientation(cube, corner_coords, slot_name)
     edge_orientation = get_edge_orientation(cube, edge_coords, slot_name)
     
-    # === MATCH TO CASE ===
-    print(f"Corner at {corner_u_pos}, orientation: {corner_orientation}")
-    print(f"Edge at {edge_u_pos}, orientation: {edge_orientation}")
+    # Match using relative positions
+    case = match_f2l_case(corner_relative_pos, corner_orientation, edge_relative_pos, edge_orientation)
     
-    # Now match based on the patterns in the descriptions
-    case = match_f2l_case(corner_u_pos, corner_orientation, edge_u_pos, edge_orientation)
+    if not case:
+        print(f"No case: C:{corner_relative_pos}/{corner_orientation}, E:{edge_relative_pos}/{edge_orientation}")
     
     return case
 
@@ -219,7 +257,6 @@ def get_corner_u_position(corner_coords):
     """
     # Check which corner position based on coordinates
     coord_set = set(corner_coords)
-    print(f"Corner coordinates: {corner_coords}")
     
     if ("U", 2, 2) in coord_set:  # U face bottom-right
         return "UFR"
@@ -235,27 +272,29 @@ def get_corner_u_position(corner_coords):
 
 def get_corner_orientation(cube, corner_coords, slot_name):
     """
-    Determine corner orientation for red-green slot.
-    Returns: "yellow_up", "yellow_front", "yellow_right"
+    Determine corner orientation relative to the slot's perspective.
     """
-    # For red-green slot: need Red, Green, Yellow colors
-    # Yellow = 'Y', Red = 'R', Green = 'G'
+    # Define which faces are 'Front' and 'Right' for each slot's perspective
+    slot_faces = {
+        "red-green":    {"front": "F", "right": "R"},
+        "orange-green": {"front": "L", "right": "F"},
+        "red-blue":     {"front": "R", "right": "B"},
+        "orange-blue":  {"front": "B", "right": "L"},
+    }
+    
+    faces = slot_faces.get(slot_name)
     
     for face, row, col in corner_coords:
-        color = cube[face][row][col]
-        if color == 'Y':
-            # Determine which face yellow is on
+        if cube[face][row][col] == 'Y':
             if face == "U":
+                print(f"DEBUG: Corner piece has yellow on U face - orientation is 'yellow_up'")
                 return "yellow_up"
-            elif face == "F":
+            elif face == faces["front"]:
+                print(f"DEBUG: Corner piece has yellow on front face ({face}) - orientation is 'yellow_front'")
                 return "yellow_front"
-            elif face == "R":
+            elif face == faces["right"]:
+                print(f"DEBUG: Corner piece has yellow on right face ({face}) - orientation is 'yellow_right'")
                 return "yellow_right"
-            elif face == "B":
-                return "yellow_back"
-            elif face == "L":
-                return "yellow_left"
-    
     return None
 
 
@@ -280,26 +319,27 @@ def get_edge_u_position(edge_coords):
 
 def get_edge_orientation(cube, edge_coords, slot_name):
     """
-    Determine edge orientation for red-green slot.
-    Returns: "front_up", "right_up", or None
+    Determine edge orientation relative to the slot.
     """
-    # For red-green slot: edge has Red and Green
-    # Green = 'G' (front face F)
-    # Red = 'R' (right face R)
+    # For each slot, define which color is "front" and which is "right" 
+    # from the slot's rotated perspective
+    slot_color_map = {
+        "red-green":    {"front": "G", "right": "R"},  # Green=front, Red=right
+        "orange-green": {"front": "O", "right": "G"},  # Orange=front, Green=right (from rotated view)
+        "red-blue":     {"front": "R", "right": "B"},  # Red=front, Blue=right (from rotated view)
+        "orange-blue":  {"front": "B", "right": "O"},  # Blue=front, Orange=right (from rotated view)
+    }
+    
+    target = slot_color_map.get(slot_name)
+    if not target: return None
     
     for face, row, col in edge_coords:
-        color = cube[face][row][col]
-        
-        # Check if this is the Green sticker (front color)
-        if color == 'G':
-            if face == "U":
-                return "front_up"  # Front color (green) is facing up
-        
-        # Check if this is the Red sticker (right color)
-        if color == 'R':
-            if face == "U":
-                return "right_up"  # Right color (red) is facing up
-    
+        if face == "U":
+            color = cube[face][row][col]
+            if color == target["front"]:
+                return "front_up"
+            elif color == target["right"]:
+                return "right_up"
     return None
 
 
@@ -383,28 +423,31 @@ def match_f2l_case(corner_pos, corner_orient, edge_pos, edge_orient):
     if corner_orient == "yellow_up" and edge_pos == "UR" and edge_orient == "right_up":
         return "corner_up_8"
     
-    print("WARNING: No F2L case matched!")
     return None
 
 
-def align_corner_to_ufr(corner_pos):
+def align_corner_to_ufr(corner_pos, slot_name):
     """
-    Return U moves needed to align corner from its current position to UFR.
-    UFR is the target position for all F2L algorithms.
-    
-    Args:
-        corner_pos: Current corner position ("UFR", "UFL", "UBR", "UBL")
-    
-    Returns:
-        List of U moves to align corner to UFR
+    Align corner to the target 'home' position for the specific slot.
+    Red-Green home: UFR, Orange-Green home: UFL
     """
-    if corner_pos == "UFR":
-        return []  # Already in position
-    elif corner_pos == "UBR":
-        return ["U"]  # UBR → UFR
-    elif corner_pos == "UBL":
-        return ["U2"]  # UBL → UFR
-    elif corner_pos == "UFL":
-        return ["Uprime"]  # UFL → UFR
+    # Define the target corner for each slot
+    slot_targets = {
+        "red-green": "UFR",
+        "orange-green": "UFL",
+        "red-blue": "UBR",
+        "orange-blue": "UBL"
+    }
+    target = slot_targets.get(slot_name, "UFR")
+
+    # Sequence: UFR -> UBR -> UBL -> UFL (with U moves)
+    positions = ["UFR", "UBR", "UBL", "UFL"]
+    start_idx = positions.index(corner_pos)
+    target_idx = positions.index(target)
     
-    return []
+    # Calculate moves to reach target
+    diff = (target_idx - start_idx) % 4
+    # diff=1: target is 1 step forward (UBR->UFR needs to go back 3 = U)
+    # diff=3: target is 3 steps forward (UFL->UFR needs to go back 1 = U')
+    move_map = {0: [], 1: ["Uprime"], 2: ["U2"], 3: ["U"]}
+    return move_map[diff]

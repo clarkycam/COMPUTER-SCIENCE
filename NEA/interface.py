@@ -387,7 +387,8 @@ for face, frame in face_frames.items():
                 frame,
                 width=tile_size,
                 height=tile_size,
-                text=f"{face}, {row}, {col}",
+                # text=f"{face}, {row}, {col}",
+                text="",
                 text_color="#000000",
                 fg_color="#505050",
                 # fg_color=face_colours[face]["main"],
@@ -443,7 +444,7 @@ def apply_move_gui(move):
 
 def apply_sequence_from_entry(entry_widget):
     sequence = entry_widget.get().strip()
-    reset_cube_to_solved()
+    # reset_cube_to_solved()
     if not sequence:
         update_gui_from_cube()
         return
@@ -573,7 +574,78 @@ buttons_frame = customtkinter.CTkFrame(root, corner_radius=10, width=800, height
 buttons_frame.pack(pady=50)
 
 
-# --- Output Window ---
+def simplify_moves(moves_string):
+
+    if not moves_string.strip():
+        return ""
+    
+    moves = moves_string.replace("'", "prime").split()
+    
+    combinations = {
+        # Same move twice
+        ('U', 'U'): 'U2', ('D', 'D'): 'D2', ('L', 'L'): 'L2',
+        ('R', 'R'): 'R2', ('F', 'F'): 'F2', ('B', 'B'): 'B2',
+        ('Uprime', 'Uprime'): 'U2', ('Dprime', 'Dprime'): 'D2', ('Lprime', 'Lprime'): 'L2',
+        ('Rprime', 'Rprime'): 'R2', ('Fprime', 'Fprime'): 'F2', ('Bprime', 'Bprime'): 'B2',
+        
+        # Opposite moves (cancel out)
+        ('U', 'Uprime'): '', ('Uprime', 'U'): '',
+        ('D', 'Dprime'): '', ('Dprime', 'D'): '',
+        ('L', 'Lprime'): '', ('Lprime', 'L'): '',
+        ('R', 'Rprime'): '', ('Rprime', 'R'): '',
+        ('F', 'Fprime'): '', ('Fprime', 'F'): '',
+        ('B', 'Bprime'): '', ('Bprime', 'B'): '',
+        
+        # Double + single
+        ('U2', 'U'): 'Uprime', ('U', 'U2'): 'Uprime',
+        ('D2', 'D'): 'Dprime', ('D', 'D2'): 'Dprime',
+        ('L2', 'L'): 'Lprime', ('L', 'L2'): 'Lprime',
+        ('R2', 'R'): 'Rprime', ('R', 'R2'): 'Rprime',
+        ('F2', 'F'): 'Fprime', ('F', 'F2'): 'Fprime',
+        ('B2', 'B'): 'Bprime', ('B', 'B2'): 'Bprime',
+        
+        # Double + prime
+        ('U2', 'Uprime'): 'U', ('Uprime', 'U2'): 'U',
+        ('D2', 'Dprime'): 'D', ('Dprime', 'D2'): 'D',
+        ('L2', 'Lprime'): 'L', ('Lprime', 'L2'): 'L',
+        ('R2', 'Rprime'): 'R', ('Rprime', 'R2'): 'R',
+        ('F2', 'Fprime'): 'F', ('Fprime', 'F2'): 'F',
+        ('B2', 'Bprime'): 'B', ('Bprime', 'B2'): 'B',
+        
+        # Double + double (cancel)
+        ('U2', 'U2'): '', ('D2', 'D2'): '', ('L2', 'L2'): '',
+        ('R2', 'R2'): '', ('F2', 'F2'): '', ('B2', 'B2'): '',
+        
+    }
+    
+    simplified = []
+    i = 0
+    
+    while i < len(moves):
+        if i < len(moves) - 1:
+            # Check if current and next can be combined
+            current = moves[i]
+            next_move = moves[i + 1]
+            
+            # Only combine if same face (first character matches)
+            if current[0] == next_move[0]:
+                key = (current, next_move)
+                if key in combinations:
+                    result = combinations[key]
+                    if result:  # If not empty (not cancelled)
+                        simplified.append(result)
+                    i += 2  # Skip both moves
+                    continue
+        
+        # No combination, add current move
+        simplified.append(moves[i])
+        i += 1
+    
+    # Convert back to string with apostrophes
+    result = ' '.join(simplified).replace('prime', "'")
+    return result
+
+
 def open_output_window(solution_moves, method, error_message):
     # open a new window to display the solution
     output_window = customtkinter.CTkToplevel(root)
@@ -597,6 +669,11 @@ def open_output_window(solution_moves, method, error_message):
     # Format moves for display replace "prime" with "'" for readability and joins it
     if method == "CFOP":
         solution_moves = ' '.join([move.replace("prime", "'") for move in solution_moves])
+    
+    # Simplify the moves before displaying
+    solution_moves = simplify_moves(solution_moves)
+    solution_moves = simplify_moves(solution_moves) # run twice to simplify triples
+    
     formatted_moves = solution_moves.replace(" ", "  ")
 
     # Solution moves label

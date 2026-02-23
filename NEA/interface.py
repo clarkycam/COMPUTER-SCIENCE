@@ -1,6 +1,7 @@
 #interface.py
 from tkinter import *
 import customtkinter
+import kociemba
 
 from PIL import Image
 from main import (
@@ -11,7 +12,8 @@ from main import (
     reset_cube_to_solved
 )
 from solver import (
-    solve_cube
+    solve_cube,
+    cube_to_kociemba_string
 )
 from cfop import (
     is_cross_solved
@@ -444,7 +446,7 @@ def apply_move_gui(move):
 
 def apply_sequence_from_entry(entry_widget):
     sequence = entry_widget.get().strip()
-    # reset_cube_to_solved()
+    reset_cube_to_solved()
     if not sequence:
         update_gui_from_cube()
         return
@@ -569,11 +571,6 @@ theme_button.place(relx=0.01, rely=0.985, anchor="sw")
 
 
 
-# --- Control Buttons Frame ---
-buttons_frame = customtkinter.CTkFrame(root, corner_radius=10, width=800, height=200)
-buttons_frame.pack(pady=50)
-
-
 def simplify_moves(moves_string):
 
     if not moves_string.strip():
@@ -646,6 +643,8 @@ def simplify_moves(moves_string):
     return result
 
 
+    
+
 def open_output_window(solution_moves, method, error_message):
     # open a new window to display the solution
     output_window = customtkinter.CTkToplevel(root)
@@ -656,7 +655,39 @@ def open_output_window(solution_moves, method, error_message):
     output_window.lift()
     output_window.focus_force()
     output_window.attributes('-topmost', True)
-    # output_window.after(100, lambda: output_window.attributes('-topmost', False))
+
+    
+    def find_scramble(cube):
+        
+        try:
+        # Get current cube state in Kociemba format
+            cube_string = cube_to_kociemba_string(cube)
+        
+        # Solve the cube using Kociemba
+            solution = kociemba.solve(cube_string)
+        
+        # Reverse the solution to get the scramble
+            moves = solution.split()
+        
+        # Reverse the move list
+            reversed_moves = moves[::-1]
+        
+            # Invert each move 
+            def invert_move(move):
+                if move.endswith("'"):
+                    return move[:-1]  # Remove prime
+                elif move.endswith("2"):
+                    return move  # 2 stays the same
+                else:
+                    return move + "'"  # Add prime
+            
+            scramble = [invert_move(move) for move in reversed_moves]
+            scramble_string = ' '.join(scramble)
+        
+            return scramble_string
+        except:
+            scramble_string="could not solve"
+            return scramble_string
     
     # Title label
     title = customtkinter.CTkLabel(
@@ -665,6 +696,14 @@ def open_output_window(solution_moves, method, error_message):
         font=("Arial", 24, "bold")
     )
     title.pack(pady=20)
+
+    # Scramble label
+    scramble_label = customtkinter.CTkLabel(
+        output_window,
+        text=f"Scramble: {find_scramble(cube)}",
+        font=("Arial", 14)
+    )
+    scramble_label.pack(pady=10)
 
     # Format moves for display replace "prime" with "'" for readability and joins it
     if method == "CFOP":
@@ -740,6 +779,11 @@ def open_output_window(solution_moves, method, error_message):
     )
     close_button.grid(row=0, column=1, padx=10, pady=10)
 
+
+
+# --- Control Buttons Frame ---
+buttons_frame = customtkinter.CTkFrame(root, corner_radius=10, width=800, height=200)
+buttons_frame.pack(pady=50)
 
 # solve function
 import threading

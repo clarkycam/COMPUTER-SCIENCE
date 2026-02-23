@@ -61,6 +61,25 @@ def match_oll_case(white_grid, side_grid):
 
     if all(white_grid[r][c] for r in range(3) for c in range(3)):
         return None
+
+    
+    center = white_grid[1][1]
+    top_edge = white_grid[0][1]
+    right_edge = white_grid[1][2]
+    bottom_edge = white_grid[2][1]
+    left_edge = white_grid[1][0]
+
+    # I-Shape
+    if center and left_edge and right_edge and not top_edge and not bottom_edge:
+        return "I-Shape"
+    
+    # L-Shape
+    if center and bottom_edge and right_edge and not top_edge and not left_edge:
+        return "L-Shape"
+    
+    # Dot-Shape
+    if center and not top_edge and not right_edge and not bottom_edge and not left_edge:
+        return "Dot-Shape"
     
     # Antisune
     if white_grid == [

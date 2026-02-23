@@ -11,7 +11,7 @@ def solve_cfop(cube):
     cross_moves = solve_cross(cube)
     f2l_moves = solve_f2l(cube)
     oll_moves = solve_oll(cube)
-    pll_moves = []  # Placeholder for PLL moves
+    pll_moves = solve_pll(cube)
     
     moves.extend(cross_moves)
     moves.extend(f2l_moves)
@@ -740,11 +740,11 @@ def extract_edge_to_top(edge_coords, slot_name):
 # --- Solve OLL ---
 
 def solve_oll(cube):
-    # Solves the OLL step by orienting all pieces in the top layer correctly.
+    # Solve OLL making the top face one colour
     from oll_cases import is_oll_solved, get_white_top_positions, get_side_white_positions, match_oll_case, OLL_CASES
     
     moves = []
-    max_iterations = 10
+    max_iterations = 10  # Safety limit to prevent infinite loops
     iteration = 0
     
     print("\n=== SOLVING OLL ===")
@@ -757,7 +757,7 @@ def solve_oll(cube):
         case_name = None
         u_rotations = 0
         
-        for attempt in range(4):
+        for attempt in range(4):  # Try 0, 1, 2, 3 U rotations
             # Get white positions
             white_grid = get_white_top_positions(cube)
             side_grid = get_side_white_positions(cube)
@@ -809,4 +809,95 @@ def solve_oll(cube):
         print(f"✗ OLL not solved after {iteration} iterations")
     
     print(f"OLL moves: {moves}")
+    return moves
+
+
+# --- Solve PLL ---
+
+def solve_pll(cube):
+    # Solve PLL aranging top layer pieces correctly resulting in a solved cube
+    from pll_cases import is_pll_solved, get_side_edge_positions, get_green_edge_positions, get_red_edge_positions, match_pll_case, PLL_CASES
+    
+    moves = []
+    
+    print("\n=== SOLVING PLL ===")
+    
+    # Check if already solved
+    if is_pll_solved(cube):
+        print("✓ PLL already solved")
+        return moves
+    
+    # Try to match a case with up to 3 U rotations
+    case_name = None
+    u_rotations = 0
+    
+    for attempt in range(4):  # Try 0, 1, 2, 3 U rotations
+        # Get edge positions patterns
+        pattern = get_side_edge_positions(cube)
+        green_pattern = get_green_edge_positions(cube)
+        red_pattern = get_red_edge_positions(cube)
+        
+        # Try to match case
+        case_name = match_pll_case(pattern, green_pattern, red_pattern)
+        
+        if case_name:
+            print(f"Case '{case_name}' found after {u_rotations} U rotations")
+            break
+        
+        # No match, try rotating U
+        if attempt < 3:  # Don't rotate after the 4th attempt
+            print(f"No case matched, trying U rotation {attempt + 1}")
+            apply_move("U", cube)
+            moves.append("U")
+            u_rotations += 1
+    
+    if case_name is None:
+        print("ERROR: No PLL case matched after all U rotations")
+        return moves
+    
+    # Get algorithm
+    algorithm = PLL_CASES.get(case_name)
+    if not algorithm:
+        print(f"ERROR: No algorithm found for case {case_name}")
+        return moves
+    
+    # Convert notation (R' -> Rprime)
+    converted_algorithm = []
+    for move in algorithm:
+        if "'" in move:
+            converted_algorithm.append(move.replace("'", "prime"))
+        else:
+            converted_algorithm.append(move)
+    
+    print(f"Applying algorithm: {converted_algorithm}")
+    
+    # Apply algorithm
+    for move in converted_algorithm:
+        apply_move(move, cube)
+    
+    moves.extend(converted_algorithm)
+    
+    # Check if solved after algorithm
+    if is_pll_solved(cube):
+        print("✓ PLL solved after algorithm")
+    else:
+        # Try U, U2, U' to align
+        print("PLL not solved, trying U moves to align...")
+        
+        for u_move in ["U", "U2", "Uprime"]:
+            apply_move(u_move, cube)
+            moves.append(u_move)
+            
+            if is_pll_solved(cube):
+                print(f"✓ PLL solved after {u_move}")
+                break
+            else:
+                # Undo the U move and try next one
+                apply_move(INVERSE[u_move], cube)
+                moves.pop()
+        
+        if not is_pll_solved(cube):
+            print("✗ WARNING: PLL still not solved after alignment attempts")
+    
+    print(f"PLL moves: {moves}")
     return moves

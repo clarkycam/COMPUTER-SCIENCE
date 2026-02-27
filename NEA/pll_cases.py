@@ -69,7 +69,6 @@ PLL_CASES = {
 
 def is_pll_solved(cube):
     # Check if the cube is in a PLL solved state
-
     for face in ["U", "R", "F", "D", "L", "B"]:
         color = cube[face][1][1]  # center piece color
         for row in cube[face]:

@@ -1,7 +1,7 @@
 #interface.py
 from tkinter import *
 import customtkinter
-import kociemba
+# import kociemba
 
 from PIL import Image
 from main import (
@@ -187,6 +187,7 @@ colour_buttons_frame.grid_propagate(True)
 
 # set active colour
 def set_active_colour(main, hover, button):
+    # set the active colour and update button borders to show selection
     global active_colour, active_picker_button, cycle_mode
     active_colour = {"main": main, "hover": hover}
 
@@ -332,6 +333,7 @@ for face in faces:
 
 # --- Paint Function (Tile Click) ---
 def paint_tile(tile, face, row, col):
+    # handle tile click to change colour based on active colour or cycle mode
     global cycle_mode, active_colour
 
     # centre tiles locked
@@ -367,10 +369,10 @@ def paint_tile(tile, face, row, col):
     if new_colour in colour_to_letter:
         cube[face][row][col] = colour_to_letter[new_colour]
     
-    #temp
-    print("\nCube state after change:")
-    for face in cube:
-        print(face, cube[face])
+    # #temp
+    # print("\nCube state after change:")
+    # for face in cube:
+    #     print(face, cube[face])
 
 # --- Cube Tiles ---
 cube_size = 3
@@ -441,10 +443,12 @@ CFOP_radio_button.grid(row=0, column=1, padx=0, pady=0)
 
 # --- Manual Move Controls Functions ---
 def apply_move_gui(move):
+    # apply a move from the GUI buttons and update the display
     apply_move(move)
     update_gui_from_cube()
 
 def apply_sequence_from_entry(entry_widget):
+    # apply a sequence of moves from the entry box, used for scrambles and applying solutions, then update the display
     sequence = entry_widget.get().strip()
     reset_cube_to_solved()
     if not sequence:
@@ -572,7 +576,7 @@ theme_button.place(relx=0.01, rely=0.985, anchor="sw")
 
 
 def simplify_moves(moves_string):
-
+    # simplify a sequence of moves by combining or cancelling where possible, e.g. "R R" -> "R2", "R R R" -> "R'", "R U R' U'" -> "" etc.
     if not moves_string.strip():
         return ""
     
@@ -658,7 +662,7 @@ def open_output_window(solution_moves, method, error_message):
 
     
     def find_scramble(cube):
-        
+        # use Kociemba to find the scramble that leads to the current cube state, by solving the cube and then inverting the solution moves to get the scramble. If it fails (e.g. invalid cube), return an error message.
         try:
         # Get current cube state in Kociemba format
             cube_string = cube_to_kociemba_string(cube)
@@ -735,7 +739,7 @@ def open_output_window(solution_moves, method, error_message):
     moves_text.pack(pady=10)
 
     def apply_sequence_from_string(moves_string):
-
+        # reset cube to solved before applying solution so user can see it from start
         if not moves_string.strip():
             return
 
@@ -790,6 +794,7 @@ import threading
 import copy
 
 def on_solve():
+    # determine which method to use based on radio button selection
     method = "KOCIEMBA" if radio_var.get() == 1 else "CFOP"
 
     # check if colours appear 9 times

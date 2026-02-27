@@ -87,6 +87,7 @@ def move_U(cube):
     cube["R"][0] = b_top
 
 def move_D(cube):
+    # Rotate the D face clockwise 
     cube["D"] = rotate_face_cw(cube["D"])
     f_bot, r_bot, b_bot, l_bot = cube["F"][2][:], cube["R"][2][:], cube["B"][2][:], cube["L"][2][:]
     cube["F"][2] = l_bot
@@ -95,6 +96,7 @@ def move_D(cube):
     cube["L"][2] = b_bot
 
 def move_F(cube):
+    # Rotate the F face clockwise
     cube["F"] = rotate_face_cw(cube["F"])
     u_bot = cube["U"][2][:]
     r_col = [cube["R"][i][0] for i in range(3)]
@@ -106,6 +108,7 @@ def move_F(cube):
     cube["U"][2] = l_col[::-1]
 
 def move_B(cube):
+    # Rotate the B face clockwise
     cube["B"] = rotate_face_cw(cube["B"])
     u_top = cube["U"][0][:]
     r_col = [cube["R"][i][2] for i in range(3)]
@@ -117,6 +120,7 @@ def move_B(cube):
     cube["U"][0] = r_col
 
 def move_L(cube):
+    # Rotate the L face clockwise
     cube["L"] = rotate_face_cw(cube["L"])
     u_col = [cube["U"][i][0] for i in range(3)]
     f_col = [cube["F"][i][0] for i in range(3)]
@@ -128,6 +132,7 @@ def move_L(cube):
     for i in range(3): cube["U"][i][0] = b_col[i]
 
 def move_R(cube):
+    # Rotate the R face clockwise
     cube["R"] = rotate_face_cw(cube["R"])
     u_col = [cube["U"][i][2] for i in range(3)]
     f_col = [cube["F"][i][2] for i in range(3)]
@@ -212,6 +217,10 @@ SCRAMBLE_MOVES = [
 ]
 
 def generate_scramble(length=20):
+    '''
+    generates a random scramble of the given length, using the standard set of moves (U, D, L, R, F, B and their primes).
+    The scramble is returned as a list of move strings, e.g. ["R", "U", "R'", "U'"].
+    '''
     scramble = []
     for _ in range(length):
         move = random.choice(SCRAMBLE_MOVES)

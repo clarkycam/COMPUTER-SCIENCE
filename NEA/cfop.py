@@ -316,6 +316,11 @@ def solve_f2l(cube):
     return moves
 
 def verify_pair_in_top(cube, corner_coords, edge_coords, extraction_moves, slot_name):
+    ''' After attempting to extract the pair to the top layer, verify that both pieces are actually in the top layer. 
+    If not, we may have a case where one piece is in the middle layer and one is in the bottom layer, 
+    which can look like both pieces are in the top when we check their positions after extraction. 
+    In this case, we need to undo the extraction moves, analyze the new positions of the pieces, 
+    and then apply a different set of extraction moves to get both pieces into the top layer for insertion.'''
     corner_in_top = is_in_top_layer(corner_coords)
     edge_in_top = is_in_top_layer(edge_coords)
     
@@ -390,6 +395,9 @@ def verify_pair_in_top(cube, corner_coords, edge_coords, extraction_moves, slot_
     return extraction_moves
 
 def insert_pair_into_slot(cube, corner_coords, edge_coords, slot_name):
+    ''' Given the corner and edge coordinates of a pair in the top layer, 
+    detect which F2L case we're in and apply the corresponding insertion algorithm 
+    to insert the pair into its correct slot in the first two layers.'''
     pairs_for_insertion = identify_f2l_pairs(cube)
     corner_insert, edge_insert = pairs_for_insertion[slot_name]
 

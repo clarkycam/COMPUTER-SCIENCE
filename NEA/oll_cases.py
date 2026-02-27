@@ -34,7 +34,7 @@ def is_oll_solved(cube):
 
 
 def get_white_top_positions(cube):
-
+    # Get the positions of the white stickers on the top face of the cube. This will help us determine which OLL case we are in.
     white_grid = []
     for row in range(3):
         white_row = []
@@ -46,7 +46,7 @@ def get_white_top_positions(cube):
 
 
 def get_side_white_positions(cube):
-
+    # Get the positions of the white stickers on the adjacent side faces (F, R, B, L) in the top layer.
     side_grid = {
         'F': [cube["F"][0][col] == 'W' for col in range(3)],
         'R': [cube["R"][0][col] == 'W' for col in range(3)],
@@ -58,7 +58,7 @@ def get_side_white_positions(cube):
 
 
 def match_oll_case(white_grid, side_grid):
-
+    # Given the positions of the white stickers on the top face and the adjacent side faces, determine which OLL case we are in by comparing against known patterns for each case.
     if all(white_grid[r][c] for r in range(3) for c in range(3)):
         return None
 

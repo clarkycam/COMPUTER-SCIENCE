@@ -1,7 +1,7 @@
 #interface.py
 from tkinter import *
 import customtkinter
-# import kociemba
+import kociemba
 
 from PIL import Image
 from main import (

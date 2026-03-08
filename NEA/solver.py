@@ -1,13 +1,13 @@
 #solver.py
-# import kociemba
+import kociemba
 from cfop import solve_cfop, is_f2l_solved
 from main import SOLVED_CUBE
 
 
 def solve_cube(cube, method):
     # takes a cube and a solving method, returns a list of moves to solve the cube
-    # if not is_valid_cube(cube):
-    #     raise ValueError("Cube is not solvable")
+    if not is_valid_cube(cube):
+        raise ValueError("Cube is not solvable")
     if cube == SOLVED_CUBE:
         moves = ""
         return moves
@@ -18,24 +18,23 @@ def solve_cube(cube, method):
     
 def is_valid_cube(cube):
     # validates the cube and checks if it is solvable
-    return
+    solution = solve_kociemba(cube)
+    if solution:
+        print("Cube is solvable")
+        return True
+    print("Cube is not solvable")
+    return False
 
-#     solution = solve_kociemba(cube)
-#     if solution:
-#         print("Cube is solvable")
-#         return True
-#     print("Cube is not solvable")
-#     return False
+def solve_kociemba(cube):
+    # uses the Kociemba algorithm to solve the cube
+    cube_string = cube_to_kociemba_string(cube)
 
-# def solve_kociemba(cube):
-#     cube_string = cube_to_kociemba_string(cube)
+    try:
+        solution = kociemba.solve(cube_string)
+    except Exception as e:
+        raise ValueError("Cube is not solvable") from e
 
-#     try:
-#         solution = kociemba.solve(cube_string)
-#     except Exception as e:
-#         raise ValueError("Cube is not solvable") from e
-
-#     return solution
+    return solution
 
 def cube_to_string(cube):
     # converts the cube dictionary to a string representation

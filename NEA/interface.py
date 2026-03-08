@@ -756,6 +756,16 @@ def open_output_window(solution_moves, method, error_message):
 
         update_gui_from_cube()
         print("Applied solution:", moves)
+
+    # hyperlink
+    import webbrowser
+
+    def callback(url):
+        webbrowser.open_new(url)
+
+    link1 = Label(output_window, text="Rubik's Cube Notation Guide", fg="blue", bg="#212121", cursor="hand2", font=("Arial", 14))
+    link1.pack()
+    link1.bind("<Button-1>", lambda e: callback("https://ruwix.com/the-rubiks-cube/notation/"))
     
     # buttons frame
     buttons_frame = customtkinter.CTkFrame(output_window, corner_radius=10, width=400, height=200)

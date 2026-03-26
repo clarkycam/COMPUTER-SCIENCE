@@ -17,6 +17,8 @@ def solve_cfop(cube):
     moves.extend(f2l_moves)
     moves.extend(oll_moves)
     moves.extend(pll_moves)
+    #count moves
+    print(f"Moves: {len(moves)}")
     return moves
 
 

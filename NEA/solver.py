@@ -33,7 +33,8 @@ def solve_kociemba(cube):
         solution = kociemba.solve(cube_string)
     except Exception as e:
         raise ValueError("Cube is not solvable") from e
-
+    #count moves
+    print(f"Moves: {len(solution.split())}")
     return solution
 
 def cube_to_string(cube):

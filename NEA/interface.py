@@ -806,6 +806,7 @@ import copy
 def on_solve():
     # determine which method to use based on radio button selection
     method = "KOCIEMBA" if radio_var.get() == 1 else "CFOP"
+    import time
 
     # check if colours appear 9 times
     colour_counts = {}
@@ -829,7 +830,9 @@ def on_solve():
         solve_button.configure(state="disabled", text="Solving...")
         
         try:
-            # We pass a deepcopy so the solver doesn't mess up the GUI state
+            tic = time.perf_counter()
+
+            # pass a deepcopy so the solver doesn't mess up the GUI state
             cube_to_solve = copy.deepcopy(cube)
             moves = solve_cube(cube_to_solve, method)
 
@@ -842,7 +845,9 @@ def on_solve():
                 # Open the output window with the solution
                 root.after(0, lambda: open_output_window(moves, method, ""))
                 solve_button.configure(state="normal", text="Solve Cube")
-                
+                toc = time.perf_counter()
+                print(f"Solution found in {toc - tic:.5f} seconds.")
+
         except Exception as e:
             print("Solve failed:", e)
             solve_button.configure(state="normal", text="Solve Cube")
